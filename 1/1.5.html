@@ -1,0 +1,464 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Properties of Air - Oxygen Experiment</title>
+    <style>
+        :root {
+            --primary: #0284c7;
+            --bg-color: #f1f5f9;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex; flex-direction: column; align-items: center; padding: 15px 10px;
+        }
+
+        .container {
+            width: 100%; max-width: 800px; background-color: var(--card-bg);
+            border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        header {
+            background-color: #0f172a; color: white; padding: 20px; text-align: center;
+            border-bottom: 4px solid var(--primary);
+        }
+
+        header h1 { font-size: 1.5rem; margin-bottom: 5px; color: #bae6fd; }
+
+        /* Report Section */
+        .report-section {
+            padding: 25px; background-color: #f8fafc; border-bottom: 2px solid #cbd5e1;
+            line-height: 1.7; font-size: 1.05rem;
+        }
+        
+        .report-section h2 { color: #0369a1; border-bottom: 2px solid #bae6fd; padding-bottom: 5px; margin-bottom: 15px; }
+        .report-section p { margin-bottom: 10px; color: #334155; }
+        .report-section strong { color: #0f172a; }
+
+        .highlight-box {
+            background-color: #fffbeb; border-left: 4px solid #f59e0b;
+            padding: 12px; margin: 15px 0; border-radius: 0 8px 8px 0; color: #b45309;
+        }
+
+        /* Canvas Area */
+        .canvas-wrapper {
+            width: 100%; background: #1e293b; display: flex; justify-content: center;
+            position: relative; border-bottom: 3px solid #cbd5e1; padding: 20px 0;
+            background-image: radial-gradient(circle at 50% 50%, #334155 0%, #0f172a 100%);
+            touch-action: none; /* Crucial for drag and drop */
+        }
+        canvas { width: 100%; max-width: 500px; height: auto; aspect-ratio: 4/3; cursor: grab;}
+        canvas:active { cursor: grabbing; }
+
+        /* Controls */
+        .controls {
+            padding: 20px; background-color: #f1f5f9; display: flex; justify-content: center;
+        }
+
+        button {
+            padding: 14px 24px; border: none; border-radius: 8px;
+            background-color: var(--primary); color: white; font-weight: bold; font-size: 1.1rem;
+            cursor: pointer; box-shadow: 0 4px 0 #0369a1; transition: all 0.1s;
+            width: 100%; max-width: 300px; text-align: center; text-transform: uppercase; letter-spacing: 1px;
+        }
+        button:active { transform: translateY(4px); box-shadow: 0 0 0 #0369a1; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Properties of Air</h1>
+        <p>Interactive Science Laboratory</p>
+    </header>
+
+    <!-- Lab Report -->
+    <div class="report-section">
+        <h2>Experiment Report</h2>
+        <p><strong>Title:</strong> Properties of air</p>
+        <p><strong>Objective:</strong> To prove that oxygen is present in air and supports burning.</p>
+        <p><strong>Required materials:</strong> Matchbox/lighter, candle, glass tumbler, bowl, water.</p>
+        <p><strong>Procedure:</strong> A burning candle was kept in a bowl partially filled with water. The candle was covered with a glass tumbler.</p>
+        
+        <div class="highlight-box">
+            <strong>Observation:</strong> The candle extinguished after a moment. The water volume raised in the glass tumbler.
+        </div>
+        
+        <p><strong>Result:</strong> Oxygen in the air supports burning. When consumed, water takes its place (filling about 21% of the glass).</p>
+        <p><strong>Conclusion:</strong> Oxygen is present in the air and takes up roughly 21% of its volume.</p>
+    </div>
+
+    <!-- Interactive Simulation -->
+    <div class="canvas-wrapper">
+        <canvas id="simCanvas" width="500" height="375"></canvas>
+    </div>
+
+    <div class="controls">
+        <button id="reset-btn">Reset Experiment</button>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('simCanvas');
+    const ctx = canvas.getContext('2d');
+    const resetBtn = document.getElementById('reset-btn');
+
+    // Simulation Constants
+    const CX = canvas.width / 2;
+    const CY = canvas.height / 2;
+    const FLOOR_Y = 320;
+
+    // State Variables
+    let state = {
+        time: 0,
+        oxygenLevel: 21.0, // Starts at 21%
+        isCovered: false,
+        isDragging: false,
+        hasDragged: false, // Tracks if user has started interacting
+        experimentOver: false,
+        
+        // Tumbler properties
+        glass: {
+            x: 80, y: 120, // Starting position
+            w: 110, h: 180, // slightly larger for realistic proportions
+            targetX: CX - 55, targetY: FLOOR_Y - 180 // Where it snaps to cover the candle
+        }
+    };
+
+    let dragOffsetX = 0;
+    let dragOffsetY = 0;
+
+    /**
+     * DRAWING FUNCTIONS
+     */
+    function drawScene() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // 1. Draw Bowl
+        ctx.fillStyle = '#64748b';
+        ctx.beginPath();
+        ctx.ellipse(CX, FLOOR_Y, 130, 25, 0, 0, Math.PI, false); // Bottom half
+        ctx.fill();
+        ctx.fillStyle = '#94a3b8';
+        ctx.beginPath();
+        ctx.ellipse(CX, FLOOR_Y, 130, 10, 0, 0, Math.PI * 2); // Top rim
+        ctx.fill();
+
+        // 2. Draw Blue Water in Bowl
+        ctx.fillStyle = 'rgba(56, 189, 248, 0.8)';
+        ctx.beginPath();
+        ctx.ellipse(CX, FLOOR_Y + 5, 120, 8, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 3. Draw Candle
+        const candleW = 30;
+        const candleH = 70;
+        const candleX = CX - candleW/2;
+        const candleY = FLOOR_Y - candleH;
+        
+        // Candle body with gradient
+        let waxGrad = ctx.createLinearGradient(candleX, 0, candleX + candleW, 0);
+        waxGrad.addColorStop(0, '#fef08a');
+        waxGrad.addColorStop(0.5, '#fde047');
+        waxGrad.addColorStop(1, '#ca8a04');
+        ctx.fillStyle = waxGrad;
+        ctx.fillRect(candleX, candleY, candleW, candleH);
+        
+        // Wick
+        ctx.fillStyle = '#1e293b';
+        ctx.fillRect(CX - 1.5, candleY - 10, 3, 10);
+
+        // 4. Draw Animated Flame (Scales with oxygen)
+        if (state.oxygenLevel > 0) {
+            drawFlame(CX, candleY - 10, state.oxygenLevel / 21.0);
+        } else if (state.isCovered) {
+            // Draw a little smoke when out
+            ctx.fillStyle = `rgba(200, 200, 200, ${Math.max(0, 1 - (state.time * 0.5) % 1)})`;
+            ctx.beginPath();
+            ctx.arc(CX, candleY - 20 - (state.time * 10) % 20, 5 + (state.time * 5) % 10, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // 5. Draw REALISTIC Glass Tumbler
+        drawRealisticGlass();
+
+        // 6. Instructional Animated Hand / Text
+        if (!state.isCovered && !state.hasDragged) {
+            // Animated Hand showing dragging motion
+            let animOffset = Math.sin(state.time * 3) * 20; 
+            let handX = state.glass.x + state.glass.w/2 + 20 + animOffset;
+            let handY = state.glass.y + state.glass.h/2 + 20;
+            
+            ctx.fillStyle = 'white';
+            ctx.font = '35px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText("👆", handX, handY);
+            
+            // Text Label
+            ctx.fillStyle = '#bae6fd';
+            ctx.font = 'bold 18px Arial';
+            ctx.fillText("Drag glass over the candle!", CX, 50);
+        } else if (state.experimentOver) {
+            // Conclusion text overlay
+            ctx.fillStyle = '#38bdf8';
+            ctx.font = 'bold 18px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText("Water replaces the consumed Oxygen (21%)", CX, 50);
+        }
+    }
+
+    function drawRealisticGlass() {
+        let gx = state.glass.x;
+        let gy = state.glass.y;
+        let gw = state.glass.w;
+        let gh = state.glass.h;
+        let rY = 12; // Vertical radius for the top and bottom ellipses
+
+        ctx.save();
+
+        // --- A. Rising Water Inside the Glass (If covered) ---
+        if (state.isCovered) {
+            let oxygenLost = 21.0 - state.oxygenLevel;
+            let currentWaterHeight = (oxygenLost / 21.0) * (gh * 0.21); // 21% max of the glass height
+            
+            ctx.save();
+            // Create a clipping path that matches the cylindrical glass shape exactly
+            ctx.beginPath();
+            ctx.moveTo(gx, gy);
+            ctx.lineTo(gx, gy + gh);
+            ctx.ellipse(gx + gw/2, gy + gh, gw/2, rY, 0, Math.PI, 0, true);
+            ctx.lineTo(gx + gw, gy);
+            ctx.ellipse(gx + gw/2, gy, gw/2, rY, 0, 0, Math.PI, false);
+            ctx.clip();
+
+            // Fill water from the bottom
+            let waterY = gy + gh - currentWaterHeight;
+            ctx.fillStyle = 'rgba(2, 132, 199, 0.85)'; // Darker blue inside glass
+            ctx.fillRect(gx, waterY, gw, currentWaterHeight + rY*2);
+            
+            // Water Top Surface (Ellipse for 3D look)
+            ctx.fillStyle = 'rgba(56, 189, 248, 0.9)';
+            ctx.beginPath();
+            ctx.ellipse(gx + gw/2, waterY, gw/2, rY, 0, 0, Math.PI*2);
+            ctx.fill();
+            ctx.restore();
+
+            // Dynamic Oxygen Text Overlay
+            ctx.fillStyle = '#ef4444';
+            ctx.font = 'bold 18px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(`O₂ : ${state.oxygenLevel.toFixed(1)}%`, gx + gw / 2, gy - 20);
+        }
+
+        // --- B. Glass Body Rendering ---
+        // 3D Cylindrical Gradient for glass material
+        let glassGrad = ctx.createLinearGradient(gx, 0, gx + gw, 0);
+        glassGrad.addColorStop(0, 'rgba(255, 255, 255, 0.5)'); // Bright left edge
+        glassGrad.addColorStop(0.15, 'rgba(255, 255, 255, 0.05)'); // Transparent middle
+        glassGrad.addColorStop(0.85, 'rgba(255, 255, 255, 0.0)'); // Transparent middle
+        glassGrad.addColorStop(1, 'rgba(255, 255, 255, 0.4)'); // Bright right edge
+
+        ctx.fillStyle = glassGrad;
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+        ctx.lineWidth = 2.5;
+
+        // Draw the main glass cylinder
+        ctx.beginPath();
+        ctx.moveTo(gx, gy);
+        ctx.lineTo(gx, gy + gh);
+        // Bottom Curve
+        ctx.ellipse(gx + gw/2, gy + gh, gw/2, rY, 0, Math.PI, 0, true);
+        ctx.lineTo(gx + gw, gy);
+        // Top Back Curve (Drawn later for transparency layering)
+        ctx.fill();
+        ctx.stroke();
+
+        // Top Rim (Front half)
+        ctx.beginPath();
+        ctx.ellipse(gx + gw/2, gy, gw/2, rY, 0, 0, Math.PI, false);
+        ctx.stroke();
+
+        // Top Rim (Back half - slightly faded to look like looking through glass)
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+        ctx.beginPath();
+        ctx.ellipse(gx + gw/2, gy, gw/2, rY, 0, Math.PI, 0, false);
+        ctx.stroke();
+
+        // --- C. Specular Highlights (Reflections) ---
+        // Left glare
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+        ctx.beginPath();
+        ctx.roundRect(gx + gw * 0.08, gy + rY * 1.5, gw * 0.06, gh - rY * 3, 4);
+        ctx.fill();
+        
+        // Right thin glare
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+        ctx.beginPath();
+        ctx.roundRect(gx + gw * 0.88, gy + rY * 1.5, gw * 0.03, gh - rY * 3, 2);
+        ctx.fill();
+
+        ctx.restore();
+    }
+
+    function drawFlame(x, y, scale) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.scale(scale, scale);
+
+        // Flicker effect
+        let flicker = Math.sin(state.time * 20) * 2;
+        let heightBob = Math.sin(state.time * 10) * 3;
+
+        // Glowing halo
+        let glow = ctx.createRadialGradient(0, -15, 5, 0, -15, 40);
+        glow.addColorStop(0, 'rgba(253, 224, 71, 0.4)');
+        glow.addColorStop(1, 'rgba(253, 224, 71, 0)');
+        ctx.fillStyle = glow;
+        ctx.beginPath(); ctx.arc(0, -15, 40, 0, Math.PI*2); ctx.fill();
+
+        // Outer Flame (Orange)
+        ctx.fillStyle = 'rgba(249, 115, 22, 0.9)';
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.quadraticCurveTo(-15, -10, -10 + flicker, -35 + heightBob);
+        ctx.quadraticCurveTo(0, -55 + heightBob, 10 + flicker, -35 + heightBob);
+        ctx.quadraticCurveTo(15, -10, 0, 0);
+        ctx.fill();
+
+        // Inner Flame (Yellow/White)
+        ctx.fillStyle = '#fef08a';
+        ctx.beginPath();
+        ctx.moveTo(0, -5);
+        ctx.quadraticCurveTo(-8, -10, -5 + flicker*0.5, -20 + heightBob*0.5);
+        ctx.quadraticCurveTo(0, -35 + heightBob*0.5, 5 + flicker*0.5, -20 + heightBob*0.5);
+        ctx.quadraticCurveTo(8, -10, 0, -5);
+        ctx.fill();
+
+        ctx.restore();
+    }
+
+    /**
+     * PHYSICS & LOGIC
+     */
+    function updatePhysics(deltaTime) {
+        state.time += deltaTime;
+
+        if (state.isCovered && state.oxygenLevel > 0) {
+            // Decrease oxygen over 5 seconds (21 / 5 = 4.2 per second)
+            state.oxygenLevel -= 4.2 * deltaTime;
+            if (state.oxygenLevel <= 0) {
+                state.oxygenLevel = 0;
+                state.experimentOver = true;
+            }
+        }
+    }
+
+    /**
+     * DRAG AND DROP HANDLING (Mouse & Touch)
+     */
+    function getPointerPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        let clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        let clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return {
+            x: (clientX - rect.left) * scaleX,
+            y: (clientY - rect.top) * scaleY
+        };
+    }
+
+    function onPointerDown(e) {
+        if (state.isCovered) return; // Lock if already placed
+        const pos = getPointerPos(e);
+        
+        // Check if clicking inside the glass tumbler
+        if (pos.x >= state.glass.x && pos.x <= state.glass.x + state.glass.w &&
+            pos.y >= state.glass.y && pos.y <= state.glass.y + state.glass.h) {
+            
+            state.isDragging = true;
+            state.hasDragged = true; // Dismiss the hand animation tutorial
+            dragOffsetX = pos.x - state.glass.x;
+            dragOffsetY = pos.y - state.glass.y;
+            if(e.cancelable) e.preventDefault();
+        }
+    }
+
+    function onPointerMove(e) {
+        if (state.isDragging) {
+            if(e.cancelable) e.preventDefault(); // Stop scrolling
+            const pos = getPointerPos(e);
+            state.glass.x = pos.x - dragOffsetX;
+            state.glass.y = pos.y - dragOffsetY;
+        }
+    }
+
+    function onPointerUp(e) {
+        if (state.isDragging) {
+            state.isDragging = false;
+            
+            // Check if dropped near the center over the candle
+            let distToTargetX = Math.abs(state.glass.x - state.glass.targetX);
+            let distToTargetY = Math.abs(state.glass.y - state.glass.targetY);
+
+            if (distToTargetX < 60 && distToTargetY < 60) {
+                // Snap into place and start experiment!
+                state.glass.x = state.glass.targetX;
+                state.glass.y = state.glass.targetY;
+                state.isCovered = true;
+            }
+        }
+    }
+
+    canvas.addEventListener('mousedown', onPointerDown);
+    canvas.addEventListener('mousemove', onPointerMove);
+    window.addEventListener('mouseup', onPointerUp);
+
+    canvas.addEventListener('touchstart', onPointerDown, {passive: false});
+    canvas.addEventListener('touchmove', onPointerMove, {passive: false});
+    window.addEventListener('touchend', onPointerUp);
+
+    /**
+     * BUTTONS
+     */
+    resetBtn.addEventListener('click', () => {
+        state.time = 0;
+        state.oxygenLevel = 21.0;
+        state.isCovered = false;
+        state.experimentOver = false;
+        state.hasDragged = false;
+        state.glass.x = 80;
+        state.glass.y = 120;
+    });
+
+    /**
+     * MAIN ANIMATION LOOP
+     */
+    let lastTime = 0;
+    function animate(timestamp) {
+        let deltaTime = (timestamp - lastTime) / 1000;
+        if (!lastTime) deltaTime = 0;
+        lastTime = timestamp;
+
+        updatePhysics(deltaTime);
+        drawScene();
+
+        requestAnimationFrame(animate);
+    }
+
+    // Start
+    requestAnimationFrame(animate);
+
+</script>
+</body>
+</html>
+
