@@ -1,0 +1,404 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Photosynthesis Explorer - 3D Interactive</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap');
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: radial-gradient(circle at 50% 50%, #0f172a 0%, #1e293b 100%);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* --- 3D Terrarium Styling --- */
+        .terrarium-container {
+            perspective: 1200px;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .terrarium {
+            width: 100%;
+            max-width: 800px;
+            height: auto;
+            transform-style: preserve-3d;
+            transform: rotateX(10deg) rotateY(-10deg);
+            animation: float-idle 6s ease-in-out infinite;
+        }
+
+        @keyframes float-idle {
+            0%, 100% { transform: rotateX(10deg) rotateY(-10deg) translateY(0px); }
+            50% { transform: rotateX(12deg) rotateY(-8deg) translateY(-10px); }
+        }
+
+        /* --- Organic Idle Animations --- */
+        .plant-structure { transform-origin: 500px 850px; animation: plant-breathe 6s infinite ease-in-out; }
+        .leaf-left { transform-origin: 495px 650px; animation: flutter-left 4s infinite ease-in-out; }
+        .leaf-right { transform-origin: 505px 550px; animation: flutter-right 5s infinite ease-in-out; }
+        .leaf-top { transform-origin: 500px 400px; animation: flutter-top 6s infinite ease-in-out; }
+        .sun-glow { transform-origin: 150px 150px; animation: sun-pulse 4s infinite alternate; }
+        .sun-rays { transform-origin: 150px 150px; animation: rays-spin 20s infinite linear; }
+
+        @keyframes plant-breathe { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(1deg); } }
+        @keyframes flutter-left { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-2deg); } }
+        @keyframes flutter-right { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(2deg); } }
+        @keyframes flutter-top { 0%, 100% { transform: rotate(-1deg); } 50% { transform: rotate(1deg); } }
+        @keyframes sun-pulse { from { filter: drop-shadow(0 0 20px #f59e0b); transform: scale(0.95); } to { filter: drop-shadow(0 0 50px #facc15); transform: scale(1.05); } }
+        @keyframes rays-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        /* --- Particle Systems (Hidden by default, activated via JS classes) --- */
+        
+        /* 1. Water Particles */
+        .water-droplet { opacity: 0; transition: opacity 0.5s; }
+        .active-water .water-droplet { opacity: 1; }
+        .active-water .water-droplet.path-left { animation: flow-up-left 3s infinite cubic-bezier(0.3, 0.8, 0.7, 1); }
+        .active-water .water-droplet.path-right { animation: flow-up-right 3.2s infinite cubic-bezier(0.3, 0.8, 0.7, 1) 0.5s; }
+        .active-water .water-droplet.path-top { animation: flow-up-top 3.5s infinite cubic-bezier(0.3, 0.8, 0.7, 1) 1s; }
+
+        @keyframes flow-up-left { 0% { transform: translate(500px, 850px) scale(0); } 50% { transform: translate(495px, 650px) scale(1); } 100% { transform: translate(150px, 500px) scale(0); } }
+        @keyframes flow-up-right { 0% { transform: translate(500px, 850px) scale(0); } 50% { transform: translate(505px, 550px) scale(1); } 100% { transform: translate(800px, 350px) scale(0); } }
+        @keyframes flow-up-top { 0% { transform: translate(500px, 850px) scale(0); } 50% { transform: translate(500px, 400px) scale(1); } 100% { transform: translate(420px, 150px) scale(0); } }
+
+        /* 2. Sunbeams */
+        .sunbeam-path { stroke-dasharray: 800; stroke-dashoffset: 800; opacity: 0; transition: opacity 0.5s; }
+        .active-sun .sunbeam-path { animation: beam-strike 3s infinite cubic-bezier(0.25, 1, 0.5, 1); opacity: 0.8; }
+        @keyframes beam-strike { 0% { stroke-dashoffset: 800; stroke-width: 0; } 30% { stroke-width: 25; } 100% { stroke-dashoffset: 0; stroke-width: 5; } }
+
+        /* 3. CO2 Particles */
+        .co2-molecule { opacity: 0; transition: opacity 0.5s; }
+        .active-co2 .co2-molecule { opacity: 1; }
+        .active-co2 .co2-molecule.target-left { animation: co2-in-left 4s infinite cubic-bezier(0.4, 0, 0.2, 1); }
+        .active-co2 .co2-molecule.target-right { animation: co2-in-right 4s infinite cubic-bezier(0.4, 0, 0.2, 1) 1s; }
+        
+        @keyframes co2-in-left { 0% { transform: translate(50px, 800px) scale(0); } 50% { transform: translate(250px, 550px) scale(1); } 100% { transform: translate(300px, 500px) scale(0); } }
+        @keyframes co2-in-right { 0% { transform: translate(950px, 200px) scale(0); } 50% { transform: translate(650px, 450px) scale(1); } 100% { transform: translate(600px, 480px) scale(0); } }
+
+        /* 4. Results (O2, Glucose, Glow) */
+        .o2-molecule, .glucose-star { opacity: 0; transition: opacity 0.5s; }
+        .active-result .o2-molecule, .active-result .glucose-star { opacity: 1; }
+        
+        .active-result .o2-molecule.from-left { animation: o2-out-left 3.5s infinite ease-in; }
+        .active-result .o2-molecule.from-right { animation: o2-out-right 3.5s infinite ease-in 1s; }
+        @keyframes o2-out-left { 0% { transform: translate(250px, 500px) scale(0); } 50% { transform: translate(150px, 350px) scale(1.5); } 100% { transform: translate(0px, 200px) scale(2); opacity: 0; } }
+        @keyframes o2-out-right { 0% { transform: translate(750px, 400px) scale(0); } 50% { transform: translate(850px, 250px) scale(1.5); } 100% { transform: translate(1000px, 100px) scale(2); opacity: 0; } }
+
+        .active-result .glucose-star.path-left { animation: glucose-down-left 4s infinite cubic-bezier(0.4, 0, 0.2, 1); }
+        @keyframes glucose-down-left { 0% { transform: translate(250px, 550px) scale(0); } 30% { transform: translate(350px, 600px) scale(1.5); } 60% { transform: translate(495px, 650px) scale(1); } 100% { transform: translate(500px, 900px) scale(0); } }
+
+        .active-result .leaf-blade { animation: photo-glow 2s infinite alternate; }
+        @keyframes photo-glow { from { filter: drop-shadow(0 0 5px rgba(52, 211, 153, 0.2)); } to { filter: drop-shadow(0 0 30px rgba(52, 211, 153, 1)); } }
+
+        /* UI Overrides */
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.85);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-6xl w-full h-[90vh] glass-panel rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row relative">
+        
+        <!-- SVG 3D Canvas Area (Left Side) -->
+        <div class="w-full md:w-2/3 h-1/2 md:h-full relative overflow-hidden" id="animation-layer">
+            <div class="terrarium-container">
+                <div class="terrarium">
+                    <svg viewBox="0 0 1000 1000" width="100%" height="100%" style="overflow: visible;">
+                        
+                        <defs>
+                            <!-- Gradients -->
+                            <linearGradient id="soil-top" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#4ade80" /><stop offset="100%" stop-color="#166534" /></linearGradient>
+                            <linearGradient id="soil-left" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#78350f" /><stop offset="100%" stop-color="#451a03" /></linearGradient>
+                            <linearGradient id="soil-right" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#92400e" /><stop offset="100%" stop-color="#78350f" /></linearGradient>
+                            <linearGradient id="stem-grad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#064e3b" /><stop offset="50%" stop-color="#4ade80" /><stop offset="100%" stop-color="#022c22" /></linearGradient>
+                            <radialGradient id="leaf-grad" cx="40%" cy="30%" r="70%"><stop offset="0%" stop-color="#86efac" /><stop offset="50%" stop-color="#22c55e" /><stop offset="100%" stop-color="#064e3b" /></radialGradient>
+                            <radialGradient id="sun-core" cx="40%" cy="40%" r="60%"><stop offset="0%" stop-color="#ffffff" /><stop offset="40%" stop-color="#fde047" /><stop offset="100%" stop-color="#ea580c" /></radialGradient>
+                            <radialGradient id="water-grad" cx="30%" cy="30%" r="70%"><stop offset="0%" stop-color="#a5f3fc" /><stop offset="100%" stop-color="#0284c7" /></radialGradient>
+                            <radialGradient id="co2-grad" cx="30%" cy="30%" r="70%"><stop offset="0%" stop-color="#cbd5e1" /><stop offset="100%" stop-color="#475569" /></radialGradient>
+                            <radialGradient id="o2-grad" cx="30%" cy="30%" r="70%"><stop offset="0%" stop-color="#ffffff" /><stop offset="100%" stop-color="#38bdf8" /></radialGradient>
+                            
+                            <!-- Drop Shadows -->
+                            <filter id="shadow-light" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="10" stdDeviation="8" flood-color="#000" flood-opacity="0.5"/></filter>
+                            <filter id="glow-sun" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="15" result="blur" /><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                            <filter id="glow-energy"><feGaussianBlur stdDeviation="6" result="blur" /><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                            
+                            <path id="sparkle" d="M0 -15 C 2 -5, 5 -2, 15 0 C 5 2, 2 5, 0 15 C -2 5, -5 2, -15 0 C -5 -2, -2 -5, 0 -15 Z" fill="#fde047"/>
+                        </defs>
+
+                        <!-- Base Shadow -->
+                        <ellipse cx="500" cy="920" rx="300" ry="100" fill="#000" opacity="0.4" filter="blur(20px)" />
+
+                        <!-- Isometric Soil Base -->
+                        <g filter="url(#shadow-light)">
+                            <path d="M 500 870 L 720 780 L 720 860 L 500 950 Z" fill="url(#soil-right)" />
+                            <path d="M 280 780 L 500 870 L 500 950 L 280 860 Z" fill="url(#soil-left)" />
+                            <path d="M 500 690 L 720 780 L 500 870 L 280 780 Z" fill="url(#soil-top)" />
+                            <!-- Roots -->
+                            <path d="M 400 825 Q 430 870 380 920 M 460 845 Q 480 900 450 940" fill="none" stroke="#d4d4d8" stroke-width="4" opacity="0.5" stroke-linecap="round"/>
+                        </g>
+
+                        <!-- Plant Structure -->
+                        <g class="plant-structure">
+                            <path d="M 488 850 C 480 700, 495 550, 498 400 C 502 400, 505 550, 512 850 Z" fill="url(#stem-grad)" filter="url(#shadow-light)"/>
+                            
+                            <g class="leaf-right" filter="url(#shadow-light)">
+                                <path d="M 505 550 Q 580 530 630 500" fill="none" stroke="url(#stem-grad)" stroke-width="8" stroke-linecap="round"/>
+                                <path class="leaf-blade" d="M 620 505 C 750 600, 950 450, 900 300 C 800 250, 650 350, 620 505 Z" fill="url(#leaf-grad)" />
+                                <path d="M 620 505 Q 750 420 890 310" fill="none" stroke="#86efac" opacity="0.5" stroke-width="6" stroke-linecap="round"/>
+                            </g>
+
+                            <g class="leaf-left" filter="url(#shadow-light)">
+                                <path d="M 495 650 Q 420 670 350 640" fill="none" stroke="url(#stem-grad)" stroke-width="9" stroke-linecap="round"/>
+                                <path class="leaf-blade" d="M 360 645 C 200 750, 50 550, 100 400 C 200 350, 350 500, 360 645 Z" fill="url(#leaf-grad)" />
+                                <path d="M 360 645 Q 220 540 110 410" fill="none" stroke="#86efac" opacity="0.5" stroke-width="6" stroke-linecap="round"/>
+                            </g>
+
+                            <g class="leaf-top" filter="url(#shadow-light)">
+                                <path d="M 500 400 Q 480 350 460 300" fill="none" stroke="url(#stem-grad)" stroke-width="6" stroke-linecap="round"/>
+                                <path class="leaf-blade" d="M 465 305 C 300 250, 350 50, 500 50 C 650 100, 550 250, 465 305 Z" fill="url(#leaf-grad)" />
+                                <path d="M 465 305 Q 480 150 495 60" fill="none" stroke="#86efac" opacity="0.5" stroke-width="5" stroke-linecap="round"/>
+                            </g>
+                        </g>
+
+                        <!-- The Sun -->
+                        <g class="sun-glow">
+                            <circle cx="150" cy="150" r="60" fill="url(#sun-core)" filter="url(#glow-sun)"/>
+                            <g class="sun-rays">
+                                <polygon points="150,0 165,60 150,45 135,60" fill="#fde047" />
+                                <polygon points="150,300 165,240 150,255 135,240" fill="#fde047" />
+                                <polygon points="0,150 60,135 45,150 60,165" fill="#fde047" />
+                                <polygon points="300,150 240,135 255,150 240,165" fill="#fde047" />
+                                <polygon points="45,45 85,85 70,95 60,70" fill="#fde047" />
+                                <polygon points="255,255 215,215 230,205 240,230" fill="#fde047" />
+                            </g>
+                        </g>
+
+                        <!-- PARTICLE SYSTEMS -->
+                        
+                        <!-- 1. Sunbeams -->
+                        <g>
+                            <path class="sunbeam-path" d="M 180 180 Q 220 350 250 450" fill="none" stroke="#fdf08a" stroke-linecap="round" filter="url(#glow-sun)"/>
+                            <path class="sunbeam-path" d="M 200 150 Q 350 150 450 180" fill="none" stroke="#fdf08a" stroke-linecap="round" filter="url(#glow-sun)" style="animation-delay: 1s;"/>
+                        </g>
+
+                        <!-- 2. Water -->
+                        <g>
+                            <g class="water-droplet path-left"><path d="M 0 -15 C 10 5, 10 15, 0 15 C -10 15, -10 5, 0 -15 Z" fill="url(#water-grad)"/></g>
+                            <g class="water-droplet path-right"><path d="M 0 -15 C 10 5, 10 15, 0 15 C -10 15, -10 5, 0 -15 Z" fill="url(#water-grad)"/></g>
+                            <g class="water-droplet path-top"><path d="M 0 -15 C 10 5, 10 15, 0 15 C -10 15, -10 5, 0 -15 Z" fill="url(#water-grad)"/></g>
+                        </g>
+
+                        <!-- 3. CO2 -->
+                        <g>
+                            <g class="co2-molecule target-left" filter="url(#shadow-light)">
+                                <circle cx="0" cy="0" r="16" fill="url(#co2-grad)"/><circle cx="-16" cy="0" r="10" fill="#ef4444"/><circle cx="16" cy="0" r="10" fill="#ef4444"/>
+                                <text x="0" y="4" font-size="10" fill="white" font-weight="bold" text-anchor="middle">CO₂</text>
+                            </g>
+                            <g class="co2-molecule target-right" filter="url(#shadow-light)">
+                                <circle cx="0" cy="0" r="16" fill="url(#co2-grad)"/><circle cx="-16" cy="0" r="10" fill="#ef4444"/><circle cx="16" cy="0" r="10" fill="#ef4444"/>
+                                <text x="0" y="4" font-size="10" fill="white" font-weight="bold" text-anchor="middle">CO₂</text>
+                            </g>
+                        </g>
+
+                        <!-- 4. Result: O2 & Glucose -->
+                        <g>
+                            <g class="o2-molecule from-left" filter="url(#glow-energy)">
+                                <circle cx="-10" cy="0" r="15" fill="url(#o2-grad)"/><circle cx="10" cy="0" r="15" fill="url(#o2-grad)"/>
+                                <text x="0" y="5" font-size="12" fill="#0369a1" font-weight="bold" text-anchor="middle">O₂</text>
+                            </g>
+                            <g class="o2-molecule from-right" filter="url(#glow-energy)">
+                                <circle cx="-10" cy="0" r="15" fill="url(#o2-grad)"/><circle cx="10" cy="0" r="15" fill="url(#o2-grad)"/>
+                                <text x="0" y="5" font-size="12" fill="#0369a1" font-weight="bold" text-anchor="middle">O₂</text>
+                            </g>
+                            <g class="glucose-star path-left" filter="url(#glow-energy)"><use href="#sparkle"/><circle cx="0" cy="0" r="4" fill="#ffffff"/></g>
+                        </g>
+
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Interactive Control Panel (Right Side) -->
+        <div class="w-full md:w-1/3 h-1/2 md:h-full bg-slate-800/50 p-6 md:p-10 flex flex-col justify-center border-t md:border-t-0 md:border-l border-slate-600">
+            
+            <div class="mb-8">
+                <h1 class="text-3xl md:text-4xl text-emerald-400 font-black mb-2">Photosynthesis</h1>
+                <p class="text-lg text-slate-400 font-bold">(प्रकाश संश्लेषण)</p>
+            </div>
+            
+            <!-- Progress Dots -->
+            <div class="flex justify-between mb-8">
+                <div id="dot-0" class="w-4 h-4 rounded-full bg-emerald-500 shadow-[0_0_10px_#10b981]"></div>
+                <div id="dot-1" class="w-4 h-4 rounded-full bg-slate-600"></div>
+                <div id="dot-2" class="w-4 h-4 rounded-full bg-slate-600"></div>
+                <div id="dot-3" class="w-4 h-4 rounded-full bg-slate-600"></div>
+                <div id="dot-4" class="w-4 h-4 rounded-full bg-slate-600"></div>
+            </div>
+
+            <!-- Dynamic Text Content -->
+            <div class="flex-grow flex flex-col justify-center">
+                <h2 id="step-title" class="text-2xl text-white font-black mb-4 uppercase tracking-wide">The Plant Factory</h2>
+                <p id="step-desc-en" class="text-md text-slate-300 mb-3 leading-relaxed font-semibold">
+                    Plants make their own food inside their leaves. Let's learn the secret recipe!
+                </p>
+                <div class="h-px bg-slate-600 my-2"></div>
+                <p id="step-desc-np" class="text-sm text-emerald-200/80 mb-8 italic">
+                    बिरुवाहरूले पातभित्र आफ्नै खाना बनाउँछन्। आउनुहोस्, यसको गोप्य तरिका सिकौं!
+                </p>
+            </div>
+
+            <!-- Controls -->
+            <div class="flex flex-col gap-4">
+                <button id="btn-next" onclick="nextStep()" class="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white text-lg font-black py-4 px-6 rounded-2xl shadow-[0_10px_20px_rgba(16,185,129,0.3)] transform transition active:scale-95 border-b-4 border-emerald-700">
+                    START LESSON 🚀
+                </button>
+                <button id="btn-reset" onclick="resetLesson()" class="text-slate-400 hover:text-white font-bold py-2 hidden underline transition">
+                    Restart Process
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Application Logic & Audio -->
+    <script>
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = new AudioContext();
+
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            const now = audioCtx.currentTime;
+
+            if(type === 'water') {
+                osc.type = 'sine'; osc.frequency.setValueAtTime(400, now); osc.frequency.exponentialRampToValueAtTime(800, now + 0.3);
+                gain.gain.setValueAtTime(0.5, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                osc.start(now); osc.stop(now + 0.3);
+            } else if(type === 'sun') {
+                osc.type = 'triangle'; osc.frequency.setValueAtTime(600, now);
+                gain.gain.setValueAtTime(0.3, now); gain.gain.linearRampToValueAtTime(0, now + 1.0);
+                osc.start(now); osc.stop(now + 1.0);
+            } else if(type === 'wind') {
+                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(100, now);
+                gain.gain.setValueAtTime(0.2, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+                osc.start(now); osc.stop(now + 0.5);
+            } else if(type === 'magic') {
+                osc.type = 'sine'; osc.frequency.setValueAtTime(880, now); // A5
+                const osc2 = audioCtx.createOscillator(); osc2.type = 'sine'; osc2.frequency.setValueAtTime(1108.73, now); // C#6
+                osc2.connect(gain);
+                gain.gain.setValueAtTime(0, now); gain.gain.linearRampToValueAtTime(0.3, now + 0.1); gain.gain.exponentialRampToValueAtTime(0.01, now + 2);
+                osc.start(now); osc2.start(now); osc.stop(now + 2); osc2.stop(now + 2);
+            }
+        }
+
+        let currentStep = 0;
+        const animLayer = document.getElementById('animation-layer');
+        const titleEl = document.getElementById('step-title');
+        const descEn = document.getElementById('step-desc-en');
+        const descNp = document.getElementById('step-desc-np');
+        const btnNext = document.getElementById('btn-next');
+        const btnReset = document.getElementById('btn-reset');
+
+        const lessonSteps = [
+            {
+                title: "The Plant Factory",
+                en: "Plants make their own food inside their leaves. Let's learn the secret recipe!",
+                np: "बिरुवाहरूले पातभित्र आफ्नै खाना बनाउँछन्। आउनुहोस्, यसको गोप्य तरिका सिकौं!",
+                btnText: "START LESSON 🚀",
+                action: () => {} 
+            },
+            {
+                title: "1. Add Water (H₂O)",
+                en: "The roots act like straws. They drink WATER from the soil and send it up to the leaves.",
+                np: "जराले माटोबाट पानी सोसेर पातसम्म पुर्‍याउँछ।",
+                btnText: "GIVE SUNLIGHT ☀️",
+                action: () => { playSound('water'); animLayer.classList.add('active-water'); }
+            },
+            {
+                title: "2. Add Sunlight",
+                en: "Leaves act like solar panels. They catch SUNLIGHT to get the energy they need to cook.",
+                np: "पातमा हुने हरितकणले खाना पकाउन घामको शक्ति सोस्छ।",
+                btnText: "BREATHE IN AIR 💨",
+                action: () => { playSound('sun'); animLayer.classList.add('active-sun'); }
+            },
+            {
+                title: "3. Carbon Dioxide",
+                en: "Plants breathe too! They absorb CARBON DIOXIDE (CO₂) from the air through tiny holes in their leaves.",
+                np: "बिरुवाका पातले हावाबाट कार्बनडाइअक्साइड लिन्छन्।",
+                btnText: "MAKE FOOD! 🌟",
+                action: () => { playSound('wind'); animLayer.classList.add('active-co2'); }
+            },
+            {
+                title: "4. Photosynthesis!",
+                en: "MAGIC! The plant mixes Water, Sun, and CO₂ to make SUGAR for itself, and breathes out fresh OXYGEN for us!",
+                np: "चमत्कार! बिरुवाले खाना (ग्लुकोज) बनाउँछ र हामीलाई सास फेर्न अक्सिजन दिन्छ!",
+                btnText: "FINISH 🎉",
+                action: () => { 
+                    playSound('magic'); 
+                    animLayer.classList.add('active-result');
+                    btnNext.classList.add('hidden');
+                    btnReset.classList.remove('hidden');
+                }
+            }
+        ];
+
+        function nextStep() {
+            if(currentStep === 0) playSound('water'); // Wake audio context on first user click
+            
+            currentStep++;
+            if (currentStep < lessonSteps.length) {
+                const step = lessonSteps[currentStep];
+                
+                titleEl.textContent = step.title;
+                descEn.textContent = step.en;
+                descNp.textContent = step.np;
+                btnNext.textContent = step.btnText;
+                
+                for(let i=0; i<5; i++) {
+                    const dot = document.getElementById(`dot-${i}`);
+                    dot.className = i <= currentStep ? "w-4 h-4 rounded-full bg-emerald-500 shadow-[0_0_10px_#10b981]" : "w-4 h-4 rounded-full bg-slate-600";
+                }
+                step.action();
+            }
+        }
+
+        function resetLesson() {
+            playSound('wind');
+            currentStep = 0;
+            const step = lessonSteps[0];
+            titleEl.textContent = step.title;
+            descEn.textContent = step.en;
+            descNp.textContent = step.np;
+            btnNext.textContent = step.btnText;
+            
+            btnNext.classList.remove('hidden');
+            btnReset.classList.add('hidden');
+            
+            for(let i=0; i<5; i++) {
+                const dot = document.getElementById(`dot-${i}`);
+                dot.className = i === 0 ? "w-4 h-4 rounded-full bg-emerald-500 shadow-[0_0_10px_#10b981]" : "w-4 h-4 rounded-full bg-slate-600";
+            }
+
+            animLayer.classList.remove('active-water', 'active-sun', 'active-co2', 'active-result');
+        }
+    </script>
+</body>
+</html>
+

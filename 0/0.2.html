@@ -1,0 +1,538 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Water Cycle for Class 5 (जलचक्र)</title>
+    <style>
+        :root {
+            --primary: #0284c7;
+            --bg-color: #f0fdfa;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --nepali: #0369a1; 
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Comic Sans MS', 'Segoe UI', sans-serif; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex; flex-direction: column; align-items: center; padding: 10px;
+        }
+
+        .container {
+            width: 100%; max-width: 850px; background-color: var(--card-bg);
+            border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.15); overflow: hidden;
+        }
+
+        header { background-color: #0f766e; color: white; padding: 15px; text-align: center; }
+        header h1 { font-size: 1.5rem; margin-bottom: 5px; }
+        header p { font-size: 0.95rem; color: #ccfbf1; }
+
+        /* Objectives Section */
+        .objectives { padding: 20px; background-color: #fffbeb; border-bottom: 2px solid #fde68a; }
+        .objectives h2 { color: #b45309; font-size: 1.2rem; margin-bottom: 15px; }
+        .obj-block { margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px dashed #fcd34d; }
+        .obj-block:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .en-text { font-weight: bold; color: #451a03; font-size: 0.95rem; line-height: 1.4; }
+        .ne-text { color: var(--nepali); font-size: 0.95rem; margin-top: 4px; line-height: 1.4; }
+
+        /* Simulation Area */
+        .canvas-wrapper { width: 100%; background: #bae6fd; display: flex; justify-content: center; position: relative;}
+        canvas { width: 100%; max-width: 850px; height: auto; aspect-ratio: 16/9; }
+
+        /* Controls */
+        .controls { padding: 15px 20px; display: flex; gap: 20px; background: #e0f2fe; border-top: 2px solid #bae6fd; border-bottom: 2px solid #bae6fd;}
+        .slider-box { flex: 1; display: flex; flex-direction: column; gap: 5px; }
+        .slider-label { display: flex; justify-content: space-between; font-weight: bold; font-size: 0.9rem; color: #075985; }
+        
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+        input[type=range]:focus { outline: none; }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 8px; background: #93c5fd; border-radius: 4px; }
+        input[type=range]::-webkit-slider-thumb {
+            height: 24px; width: 24px; border-radius: 50%; background: #fbbf24; cursor: pointer;
+            -webkit-appearance: none; margin-top: -8px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        /* Description */
+        .story { padding: 20px; background: white; line-height: 1.6; }
+        .step { margin-bottom: 15px; padding: 10px; background: #f8fafc; border-left: 4px solid #0ea5e9; border-radius: 4px; }
+
+        /* Vocabulary Section */
+        .vocabulary { padding: 20px; background-color: #f0fdfa; border-top: 2px solid #99f6e4; }
+        .vocabulary h2 { color: #0f766e; font-size: 1.2rem; margin-bottom: 15px; text-align: center;}
+        .vocab-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
+        @media (min-width: 600px) { .vocab-grid { grid-template-columns: 1fr 1fr; } }
+        .vocab-card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border: 1px solid #ccfbf1;}
+        .vocab-title { font-weight: bold; color: #0f172a; font-size: 1.05rem; margin-bottom: 5px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;}
+        .vocab-def-en { color: #334155; font-size: 0.9rem; margin-bottom: 5px; }
+        .vocab-def-ne { color: #0284c7; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>The Water Cycle (जलचक्र)</h1>
+        <p>Class 5 Science Simulation</p>
+    </header>
+
+    <!-- Learning Objectives -->
+    <div class="objectives">
+        <h2>🎯 Why do we need to learn this? (हामीले यो किन सिक्नु पर्छ?)</h2>
+        <div class="obj-block">
+            <div class="en-text">1. Because Water is Life! Nature recycles water endlessly. The water we drink today is the exact same water the dinosaurs drank millions of years ago!</div>
+            <div class="ne-text">१. किनभने पानी नै जीवन हो! प्रकृतिले पानीलाई निरन्तर पुन: प्रयोग गरिरहन्छ। आज हामीले पिउने पानी लाखौं वर्षअघि डायनासोरले पिएको त्यही पानी हो!</div>
+        </div>
+        <div class="obj-block">
+            <div class="en-text">2. To know where our drinking water comes from. Rain doesn't just flow in rivers; it soaks deep underground into Aquifers, filling our Wells and Tube Wells.</div>
+            <div class="ne-text">२. हाम्रो पिउने पानी कहाँबाट आउँछ भनेर जान्न। वर्षाको पानी नदीमा मात्र बग्दैन; यो जमिनमुनि गहिरो रसाएर जलभण्डार (एक्विफर) मा जम्मा हुन्छ र हाम्रा कुवा तथा ट्युबवेलहरू भर्छ।</div>
+        </div>
+        <div class="obj-block">
+            <div class="en-text">3. To understand a big problem: It takes a very long time for rain to seep underground and fill these aquifers. If we pump out too much water too fast, our wells will dry up completely.</div>
+            <div class="ne-text">३. एउटा ठूलो समस्या बुझ्न: वर्षाको पानी जमिनमुनि रसाउन र यी जलभण्डारहरू भरिन धेरै लामो समय लाग्छ। यदि हामीले धेरै छिटो पानी निकाल्यौं भने, हाम्रा कुवाहरू पूर्ण रूपमा सुक्नेछन्।</div>
+        </div>
+    </div>
+
+    <!-- 2.5D Simulation Canvas -->
+    <div class="canvas-wrapper">
+        <canvas id="cycleCanvas" width="850" height="480"></canvas>
+    </div>
+
+    <!-- Interactive Sliders -->
+    <div class="controls">
+        <div class="slider-box">
+            <div class="slider-label"><span>☀️ Sun Heat (Evaporation)</span> <span id="val-heat">Normal</span></div>
+            <input type="range" id="heat-slider" min="10" max="100" value="50">
+        </div>
+        <div class="slider-box">
+            <div class="slider-label"><span>💨 Wind Speed</span> <span id="val-wind">Normal</span></div>
+            <input type="range" id="wind-slider" min="10" max="100" value="50">
+        </div>
+    </div>
+
+    <!-- Simple Story Description -->
+    <div class="story">
+        <div class="step">
+            <div class="en-text">💧 1. Heat from the sun turns liquid ocean water into an invisible gas (vapor). Try increasing the Sun Heat slider to see more vapor rising!</div>
+            <div class="ne-text">१. सूर्यको तापले समुद्रको तरल पानीलाई नदेखिने ग्यास (बाफ) मा परिणत गर्छ। धेरै बाफ उठेको हेर्न सूर्यको ताप (Sun Heat) बढाउनुहोस्!</div>
+        </div>
+        <div class="step">
+            <div class="en-text">☁️ 2. The vapor goes up, cools down, and forms clouds. Wind blows these clouds towards the land and mountains.</div>
+            <div class="ne-text">२. बाफ माथि जान्छ, चिसो हुन्छ र बादल बन्छ। हावाले यी बादलहरूलाई जमिन र पहाडतिर उडाउँछ।</div>
+        </div>
+        <div class="step">
+            <div class="en-text">🌧️ 3. When clouds hit the mountains, they group together and get very dark. They fall as Rain on the hills, and as Snow on the highest peaks! As they empty, the clouds shrink.</div>
+            <div class="ne-text">३. जब बादल पहाडमा ठोक्किन्छन्, तिनीहरू जम्मा हुन्छन् र कालो हुन्छन्। ती पहाडमा वर्षा र उच्च चुचुराहरूमा हिउँको रूपमा खस्छन्! पानी रित्तिँदै जाँदा बादल खुम्चिन्छ।</div>
+        </div>
+        <div class="step">
+            <div class="en-text">🏞️ 4. Some water flows back to the ocean in rivers (Surface Runoff). But some water slowly soaks deep into the dirt (Sub-surface Flow) to fill our underground Aquifers!</div>
+            <div class="ne-text">४. केही पानी नदीहरूबाट (सतहको बहाव) समुद्रमा फर्कन्छ। तर केही पानी बिस्तारै माटोभित्र गहिरो रसाएर (जमिनमुनिको बहाव) हाम्रो भूमिगत जलभण्डार भर्छ!</div>
+        </div>
+    </div>
+
+    <!-- Vocabulary Section (Definitions added) -->
+    <div class="vocabulary">
+        <h2>📚 Key Words to Remember (याद गर्नुपर्ने मुख्य शब्दहरू)</h2>
+        <div class="vocab-grid">
+            <div class="vocab-card">
+                <div class="vocab-title">1. Evaporation (वाष्पीकरण)</div>
+                <div class="vocab-def-en">The sun heats water and turns it into gas (vapor).</div>
+                <div class="vocab-def-ne">घामको तापले पानीलाई ग्यास (बाफ) मा परिणत गर्ने प्रक्रिया।</div>
+            </div>
+            <div class="vocab-card">
+                <div class="vocab-title">2. Condensation (बादल बन्ने प्रक्रिया)</div>
+                <div class="vocab-def-en">Water vapor cools down and turns back into liquid droplets, forming clouds.</div>
+                <div class="vocab-def-ne">बाफ चिसो भएर फेरि पानीको सानो थोपा बन्ने र बादल बन्ने प्रक्रिया।</div>
+            </div>
+            <div class="vocab-card">
+                <div class="vocab-title">3. Precipitation (वर्षा वा हिमपात)</div>
+                <div class="vocab-def-en">Water falling from clouds as rain, snow, or hail.</div>
+                <div class="vocab-def-ne">बादलबाट पानी, हिउँ, वा असिनाको रूपमा तल खस्ने प्रक्रिया।</div>
+            </div>
+            <div class="vocab-card">
+                <div class="vocab-title">4. Surface Runoff (सतहको बहाव)</div>
+                <div class="vocab-def-en">Water flowing over the ground in rivers or streams back to the ocean.</div>
+                <div class="vocab-def-ne">जमिनको माथिबाट नदी वा खोला भएर समुद्रमा फर्कने पानी।</div>
+            </div>
+            <div class="vocab-card">
+                <div class="vocab-title">5. Infiltration (पानी रसाउने)</div>
+                <div class="vocab-def-en">Water soaking deep into the dirt and underground rocks.</div>
+                <div class="vocab-def-ne">माटो र ढुङ्गाभित्र पानी पसेर जमिनमुनि जाने प्रक्रिया।</div>
+            </div>
+            <div class="vocab-card">
+                <div class="vocab-title">6. Aquifer / Groundwater (जलभण्डार / भूमिगत जल)</div>
+                <div class="vocab-def-en">A safe underground place where nature stores water, which we pump using wells.</div>
+                <div class="vocab-def-ne">जमिनमुनि पानी जम्मा भएर बस्ने सुरक्षित ठाउँ, जहाँबाट हामी कुवा वा ट्युबवेल प्रयोग गरी पानी निकाल्छौं।</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    /**
+     * 2.5D SIMULATION LOGIC (Top View + Side View Cross-Section)
+     */
+    const canvas = document.getElementById('cycleCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    const heatSlider = document.getElementById('heat-slider');
+    const windSlider = document.getElementById('wind-slider');
+    const heatValText = document.getElementById('val-heat');
+    const windValText = document.getElementById('val-wind');
+
+    let state = { heat: 50, wind: 50, time: 0 };
+
+    /**
+     * Faux-3D Projection Coordinates
+     */
+    const ridge = [
+        {x: 0,   y: 400}, // Ocean Left
+        {x: 250, y: 400}, // Coast
+        {x: 450, y: 350}, // Plains/Hills
+        {x: 650, y: 220}, // Mountains
+        {x: 850, y: 120}  // Peaks
+    ];
+
+    const depthX = 140; 
+    const depthY = -90;
+
+    function getRidgeY(x) {
+        for (let i = 0; i < ridge.length - 1; i++) {
+            if (x >= ridge[i].x && x <= ridge[i+1].x) {
+                let progress = (x - ridge[i].x) / (ridge[i+1].x - ridge[i].x);
+                return ridge[i].y + progress * (ridge[i+1].y - ridge[i].y);
+            }
+        }
+        return ridge[ridge.length-1].y;
+    }
+
+    /**
+     * RIVER PATH (Surface Runoff)
+     */
+    const riverPath = [
+        {x: 680, y: getRidgeY(680)},
+        {x: 600, y: getRidgeY(600) - 10},
+        {x: 500, y: getRidgeY(500) - 20},
+        {x: 400, y: getRidgeY(400) - 30},
+        {x: 300, y: getRidgeY(300) - 40},
+        {x: 250, y: getRidgeY(250) - 45} // Ocean
+    ];
+
+    function getRiverPos(progress) {
+        let idx = Math.floor(progress * (riverPath.length - 1));
+        if (idx >= riverPath.length - 1) return riverPath[riverPath.length - 1];
+        
+        let p1 = riverPath[idx]; let p2 = riverPath[idx + 1];
+        let localProg = (progress * (riverPath.length - 1)) - idx;
+        
+        let fx = p1.x + localProg * (p2.x - p1.x);
+        let fy = p1.y + localProg * (p2.y - p1.y);
+        
+        return { x: fx + depthX*0.4, y: fy + depthY*0.4 };
+    }
+
+    /**
+     * ENTITIES (Particles)
+     */
+    let vapors = [];
+    let clouds = [];
+    let rainDrops = [];
+    let riverDrops = [];        
+    let groundWaterDrops = [];  
+
+    /**
+     * DRAWING FUNCTIONS
+     */
+    function drawScene() {
+        // SKY
+        let skyGradient = ctx.createLinearGradient(0,0,0,400);
+        let heatRed = (state.heat / 100) * 80;
+        skyGradient.addColorStop(0, `rgb(${135 + heatRed}, 206, 235)`);
+        skyGradient.addColorStop(1, '#bae6fd');
+        ctx.fillStyle = skyGradient;
+        ctx.fillRect(0,0,850,480);
+
+        // SUN
+        let sunR = 30 + (state.heat/100)*15;
+        ctx.fillStyle = 'rgba(253, 224, 71, 0.4)';
+        ctx.beginPath(); ctx.arc(100, 70, sunR*1.5, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#facc15';
+        ctx.beginPath(); ctx.arc(100, 70, sunR, 0, Math.PI*2); ctx.fill();
+
+        // TOP VIEW: Ocean Surface
+        ctx.fillStyle = '#0284c7';
+        ctx.beginPath();
+        ctx.moveTo(ridge[0].x, ridge[0].y); ctx.lineTo(ridge[1].x, ridge[1].y);
+        ctx.lineTo(ridge[1].x + depthX, ridge[1].y + depthY); ctx.lineTo(ridge[0].x + depthX, ridge[0].y + depthY);
+        ctx.fill();
+
+        // TOP VIEW: Land Surface
+        let landGrad = ctx.createLinearGradient(ridge[1].x, 0, ridge[4].x, 0);
+        landGrad.addColorStop(0, '#22c55e'); 
+        landGrad.addColorStop(0.6, '#4ade80'); 
+        landGrad.addColorStop(0.8, '#94a3b8'); 
+        landGrad.addColorStop(1, '#ffffff'); 
+        
+        ctx.fillStyle = landGrad;
+        ctx.beginPath();
+        ctx.moveTo(ridge[1].x, ridge[1].y);
+        for(let i=2; i<ridge.length; i++) ctx.lineTo(ridge[i].x, ridge[i].y);
+        for(let i=ridge.length-1; i>=1; i--) ctx.lineTo(ridge[i].x + depthX, ridge[i].y + depthY);
+        ctx.fill();
+
+        // Surface River
+        ctx.strokeStyle = '#0284c7'; ctx.lineWidth = 6; ctx.lineCap = 'round';
+        ctx.beginPath();
+        let startR = getRiverPos(0); ctx.moveTo(startR.x, startR.y);
+        for(let p=0.1; p<=1.0; p+=0.1) {
+            let rp = getRiverPos(p); ctx.lineTo(rp.x, rp.y);
+        }
+        ctx.stroke();
+
+        // SIDE VIEW: Dirt Cross-section
+        ctx.fillStyle = '#451a03'; 
+        ctx.beginPath();
+        ctx.moveTo(ridge[0].x, ridge[0].y);
+        for(let i=1; i<ridge.length; i++) ctx.lineTo(ridge[i].x, ridge[i].y);
+        ctx.lineTo(850, 480); ctx.lineTo(0, 480);
+        ctx.fill();
+
+        // SIDE VIEW: Ocean Front Face
+        ctx.fillStyle = '#0369a1';
+        ctx.beginPath();
+        ctx.moveTo(0, 400); ctx.lineTo(250, 400);
+        ctx.lineTo(250, 480); ctx.lineTo(0, 480);
+        ctx.fill();
+
+        // AQUIFER (Underground Storage)
+        ctx.fillStyle = 'rgba(56, 189, 248, 0.4)'; 
+        ctx.beginPath();
+        ctx.moveTo(320, 480);
+        ctx.lineTo(320, 450);
+        ctx.bezierCurveTo(400, 430, 500, 460, 600, 440);
+        ctx.lineTo(600, 480);
+        ctx.fill();
+
+        // Tube Well
+        ctx.fillStyle = '#94a3b8'; // Pipe
+        ctx.fillRect(450, getRidgeY(450) - 20, 6, 90); 
+        ctx.fillStyle = '#cbd5e1'; // Pump Head
+        ctx.fillRect(445, getRidgeY(450) - 25, 16, 10);
+        
+        // Canvas Labels
+        ctx.fillStyle = 'rgba(255,255,255,0.9)'; ctx.font = 'bold 12px Arial';
+        ctx.fillText("Ocean", 50, 440);
+        ctx.fillText("Sub-surface Flow", 400, 425);
+        ctx.fillText("Aquifer (Underground Storage)", 400, 465);
+        ctx.fillText("Tube Well", 385, getRidgeY(450) - 10);
+        ctx.fillStyle = '#0f172a';
+        ctx.fillText("Surface River", 350, getRiverPos(0.8).y - 10);
+        ctx.fillText("Snow Peaks", 680, 100);
+    }
+
+    /**
+     * PHYSICS UPDATES
+     */
+    function updatePhysics() {
+        let evapSpeed = (state.heat / 100);
+        let windSpeed = (state.wind / 100);
+
+        // 1. Evaporation (Vapor particles visibly increase with heat)
+        // Base probability scales significantly with evapSpeed
+        if (Math.random() < 0.25 * evapSpeed) {
+            vapors.push({
+                x: 20 + Math.random() * 200 + (Math.random()*depthX),
+                y: 380 + (Math.random()*depthY),
+                speed: 1 + Math.random() * evapSpeed // Rise faster with heat
+            });
+        }
+
+        for (let i = vapors.length - 1; i >= 0; i--) {
+            let v = vapors[i];
+            v.y -= v.speed * 1.5; 
+            v.x += windSpeed * 1.0 + Math.sin(state.time * 5 + v.y) * 0.5; // Wavy rising           
+
+            if (v.y < 50 + Math.random()*80) { 
+                addToCloud(v.x, v.y);
+                vapors.splice(i, 1);
+            }
+        }
+
+        // 2. Clouds
+        for (let i = clouds.length - 1; i >= 0; i--) {
+            let c = clouds[i];
+            c.x += windSpeed * 2.0; 
+
+            // Merge if close
+            for (let j = 0; j < clouds.length; j++) {
+                if (i !== j && c.x > 350) {
+                    let c2 = clouds[j];
+                    if (Math.abs(c.x - c2.x) < 60 && c.volume > 0 && c2.volume > 0) {
+                        c.volume += c2.volume; 
+                        c2.volume = 0; 
+                    }
+                }
+            }
+
+            // Hit mountains -> Rain/Snow
+            // Allow some clouds to reach the far right (x > 700) for snow
+            if (c.x > 500 && c.volume > 2) c.isRaining = true;
+
+            if (c.isRaining) {
+                if (Math.random() < 0.3) {
+                    c.volume -= 0.4; // Cloud slowly shrinks
+                    
+                    // If cloud reaches the far corner of mountain range, it drops snow
+                    let isSnow = c.x > 680; 
+                    
+                    rainDrops.push({
+                        x: c.x + (Math.random() - 0.5) * c.volume * 2,
+                        y: c.y + 10,
+                        isSnow: isSnow 
+                    });
+                }
+                if (c.volume <= 0) clouds.splice(i, 1); // Vanish
+            }
+            
+            // Cleanup clouds that wander off screen
+            if (c.x > 900) clouds.splice(i, 1);
+        }
+
+        // 3. Rain & Snow falling
+        for (let i = rainDrops.length - 1; i >= 0; i--) {
+            let r = rainDrops[i];
+            
+            if (r.isSnow) {
+                r.y += 1.2; // Snow falls slowly
+                r.x += Math.sin(state.time * 3 + r.y)*1.0 + (windSpeed*0.5); // Drifts side to side
+            } else {
+                r.y += 6; // Rain falls fast
+                r.x += windSpeed * 2.0; // Slanted by wind
+            }
+
+            // Ground collision
+            let groundY = getRidgeY(r.x - depthX/2) + depthY/2; 
+            if (r.y > groundY) {
+                rainDrops.splice(i, 1);
+                
+                // If it's snow, it just melts into runoff slowly (treated same as rain for logic)
+                // SPLIT: Surface vs Sub-Surface (Infiltration)
+                if (Math.random() < 0.4) {
+                    // 40% underground
+                    groundWaterDrops.push({ x: r.x, y: groundY, speed: 0.3 + Math.random()*0.3 });
+                } else {
+                    // 60% surface river
+                    riverDrops.push({ progress: 0.0, speed: 0.002 + Math.random()*0.003 });
+                }
+            }
+        }
+
+        // 4. Surface Runoff (River particles)
+        for (let i = riverDrops.length - 1; i >= 0; i--) {
+            riverDrops[i].progress += riverDrops[i].speed;
+            if (riverDrops[i].progress >= 1.0) riverDrops.splice(i, 1);
+        }
+
+        // 5. Sub-Surface Runoff (Infiltration into Aquifer)
+        for (let i = groundWaterDrops.length - 1; i >= 0; i--) {
+            let gw = groundWaterDrops[i];
+            gw.y += gw.speed;       // Sink downwards
+            gw.x -= gw.speed * 0.2; // Flow left
+            
+            if (gw.y > 470) groundWaterDrops.splice(i, 1); 
+        }
+    }
+
+    function addToCloud(x, y) {
+        let found = clouds.find(c => Math.abs(c.x - x) < 60 && !c.isRaining);
+        if (found) found.volume += 1;
+        else clouds.push({ x: x, y: y, volume: 4, isRaining: false });
+    }
+
+    /**
+     * DRAW PARTICLES
+     */
+    function drawParticles() {
+        // Vapor (Made more visible)
+        ctx.fillStyle = 'rgba(255,255,255,0.9)';
+        vapors.forEach(v => {
+            ctx.beginPath(); ctx.arc(v.x, v.y, 3.5, 0, Math.PI*2); ctx.fill();
+        });
+
+        // Clouds
+        clouds.forEach(c => {
+            if(c.volume <= 0) return;
+            let radius = 20 + Math.min(c.volume, 30);
+            
+            // Darkens heavily over mountains
+            let darkness = 255 - Math.min((c.x / 850)*180 + c.volume*2, 200);
+            ctx.fillStyle = `rgba(${darkness}, ${darkness}, ${darkness+15}, 0.9)`;
+            
+            ctx.beginPath();
+            ctx.arc(c.x, c.y, radius*0.6, 0, Math.PI*2);
+            ctx.arc(c.x - radius*0.5, c.y + radius*0.2, radius*0.5, 0, Math.PI*2);
+            ctx.arc(c.x + radius*0.5, c.y + radius*0.2, radius*0.5, 0, Math.PI*2);
+            ctx.fill();
+        });
+
+        // Rain/Snow
+        rainDrops.forEach(r => {
+            if (r.isSnow) {
+                // Snowflakes are round and white
+                ctx.fillStyle = 'white';
+                ctx.beginPath(); ctx.arc(r.x, r.y, 2.5, 0, Math.PI*2); ctx.fill();
+            } else {
+                // Rain is blue lines
+                ctx.strokeStyle = '#0284c7'; ctx.lineWidth = 2.5;
+                ctx.beginPath(); ctx.moveTo(r.x, r.y); ctx.lineTo(r.x - 2, r.y - 8); ctx.stroke();
+            }
+        });
+
+        // Surface River (Water drops flowing on the top face)
+        ctx.fillStyle = '#e0f2fe';
+        riverDrops.forEach(r => {
+            let pos = getRiverPos(r.progress);
+            ctx.beginPath(); ctx.arc(pos.x + (Math.random()*4 - 2), pos.y + (Math.random()*4 - 2), 2.5, 0, Math.PI*2); ctx.fill();
+        });
+
+        // Sub-surface Infiltration (Water sinking into brown dirt side-view)
+        ctx.fillStyle = 'rgba(56, 189, 248, 0.8)';
+        groundWaterDrops.forEach(gw => {
+            if (gw.y > getRidgeY(gw.x)) {
+                ctx.beginPath(); ctx.arc(gw.x, gw.y, 2, 0, Math.PI*2); ctx.fill();
+            }
+        });
+    }
+
+    /**
+     * MAIN ANIMATION LOOP
+     */
+    function animate(timestamp) {
+        state.time = timestamp * 0.001;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        drawScene();
+        updatePhysics();
+        drawParticles();
+
+        requestAnimationFrame(animate);
+    }
+
+    // Controls
+    heatSlider.addEventListener('input', (e) => {
+        state.heat = e.target.value;
+        heatValText.innerText = state.heat < 33 ? "Low" : (state.heat > 66 ? "High" : "Normal");
+    });
+    windSlider.addEventListener('input', (e) => {
+        state.wind = e.target.value;
+        windValText.innerText = state.wind < 33 ? "Slow" : (state.wind > 66 ? "Fast" : "Normal");
+    });
+
+    animate();
+</script>
+
+</body>
+</html>

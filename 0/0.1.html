@@ -1,0 +1,448 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Solar System Explorer - The Everest Academy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap');
+        
+        body { 
+            font-family: 'Nunito', sans-serif; 
+            background-color: #020617; 
+            color: white;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        #space {
+            position: fixed;
+            width: 100vw;
+            height: 100vh;
+            background: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
+            z-index: -1;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.5;
+            animation: twinkle var(--duration) infinite ease-in-out;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+
+        /* Viewport and Scalable Container */
+        #viewport {
+            width: 100vw;
+            height: 100vh;
+            cursor: grab;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #viewport:active { cursor: grabbing; }
+
+        #solar-system {
+            position: relative;
+            width: 1px;
+            height: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform-origin: center center;
+            will-change: transform;
+        }
+
+        /* Orbit Lines */
+        .orbit {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+
+        /* Planet Containers */
+        .planet-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform-origin: 0 0;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            cursor: pointer;
+        }
+
+        .planet {
+            border-radius: 50%;
+            transition: transform 0.3s;
+            box-shadow: inset -5px -5px 10px rgba(0,0,0,0.5);
+            position: relative;
+        }
+
+        .planet:hover {
+            transform: scale(1.5);
+            box-shadow: 0 0 20px rgba(255,255,255,0.4);
+        }
+
+        .sun-glow {
+            animation: sun-pulse 4s infinite alternate;
+        }
+
+        @keyframes sun-pulse {
+            from { filter: drop-shadow(0 0 20px #f59e0b); }
+            to { filter: drop-shadow(0 0 50px #ea580c); }
+        }
+
+        .moon-orbit {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+        }
+
+        .moon {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: #cbd5e1;
+            border-radius: 50%;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* UI Panels */
+        #info-panel {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 24px;
+            border-radius: 24px;
+            transform: translateY(150%);
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 100;
+        }
+
+        #info-panel.active { transform: translateY(0); }
+
+        .planet-label {
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: bold;
+            white-space: nowrap;
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .control-group {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 12px;
+            border-radius: 20px;
+        }
+
+        input[type=range] { accent-color: #fbbf24; cursor: pointer; }
+    </style>
+</head>
+<body class="text-gray-800 pb-16">
+
+    <div id="space"></div>
+
+    <!-- UI Overlay -->
+    <div class="fixed top-6 left-6 z-50 pointer-events-none">
+        <h1 class="text-2xl md:text-3xl font-black text-yellow-400">Solar System</h1>
+        <p class="text-blue-300 font-bold">(सौर्यमण्डल Explorer)</p>
+    </div>
+
+    <div class="fixed top-6 right-6 z-50 flex flex-col items-end gap-3">
+        <div class="control-group flex flex-col items-center gap-2">
+            <div class="flex items-center gap-3">
+                <button onclick="changeZoom(-0.2)" class="w-8 h-8 rounded-full bg-slate-800 text-white flex items-center justify-center font-bold border border-slate-600 hover:bg-slate-700">-</button>
+                <input type="range" id="zoom-slider" min="0.1" max="5" step="0.01" value="0.8" oninput="applyZoom(this.value)" class="w-24 md:w-32 h-2">
+                <button onclick="changeZoom(0.2)" class="w-8 h-8 rounded-full bg-slate-800 text-white flex items-center justify-center font-bold border border-slate-600 hover:bg-slate-700">+</button>
+            </div>
+            <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Zoom & Drag to Explore</span>
+        </div>
+        <button onclick="resetView()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-full text-xs font-bold transition shadow-lg">Reset View (रिसेट)</button>
+    </div>
+
+    <!-- Panning Viewport -->
+    <div id="viewport">
+        <div id="solar-system">
+            <!-- SUN -->
+            <div onclick="showInfo('sun')" class="relative z-10 cursor-pointer group">
+                <svg width="80" height="80" viewBox="0 0 100 100" class="sun-glow">
+                    <defs>
+                        <radialGradient id="sunGrad" cx="50%" cy="50%" r="50%">
+                            <stop offset="0%" stop-color="#fff7ed" />
+                            <stop offset="30%" stop-color="#fbbf24" />
+                            <stop offset="100%" stop-color="#ea580c" />
+                        </radialGradient>
+                    </defs>
+                    <circle cx="50" cy="50" r="45" fill="url(#sunGrad)" />
+                </svg>
+                <div class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-sm font-black text-orange-400">SUN</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Panel -->
+    <div id="info-panel">
+        <div class="flex justify-between items-start mb-4">
+            <div>
+                <h2 id="planet-name-en" class="text-3xl font-black text-yellow-400">Planet Name</h2>
+                <p id="planet-name-np" class="text-xl font-bold text-blue-300">(ग्रहको नाम)</p>
+            </div>
+            <button onclick="closeInfo()" class="text-slate-400 hover:text-white text-4xl leading-none">&times;</button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-white">
+            <div class="bg-slate-900/50 p-6 rounded-2xl border border-slate-700">
+                <p class="text-xs font-black text-slate-500 uppercase mb-2 tracking-widest">Key Feature (विशेषता):</p>
+                <p id="planet-desc-en" class="text-lg font-bold text-slate-200">Description...</p>
+                <div class="h-px bg-slate-700 my-4"></div>
+                <p id="planet-desc-np" class="text-md font-medium text-slate-300">नेपालीमा विवरण...</p>
+            </div>
+            <div class="bg-slate-900/50 p-6 rounded-2xl border border-slate-700 flex flex-col justify-center gap-4">
+                <div class="flex justify-between items-center bg-slate-800/50 p-3 rounded-xl">
+                    <span class="text-xs font-bold text-slate-400 uppercase">Mass:</span>
+                    <span id="planet-mass" class="text-lg font-black text-emerald-400">--</span>
+                </div>
+                <div class="flex justify-between items-center bg-slate-800/50 p-3 rounded-xl">
+                    <span class="text-xs font-bold text-slate-400 uppercase">Day Length:</span>
+                    <span id="planet-day" class="text-lg font-black text-sky-400">--</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const planetData = {
+            sun: { en: "Sun", np: "सूर्य", descEn: "A massive star at the center of our solar system.", descNp: "हाम्रो सौर्यमण्डलको केन्द्रमा रहेको तारा।", mass: "1.989 × 10^30 kg", day: "25-35 Days" },
+            mercury: { en: "Mercury", np: "बुध", descEn: "Smallest planet, closest to the Sun.", descNp: "सूर्यको सबैभन्दा नजिकको ग्रह।", mass: "3.285 × 10^23 kg", day: "59 Earth Days" },
+            venus: { en: "Venus", np: "शुक्र", descEn: "Hottest planet due to thick clouds.", descNp: "सबैभन्दा तातो ग्रह।", mass: "4.867 × 10^24 kg", day: "243 Earth Days" },
+            earth: { en: "Earth", np: "पृथ्वी", descEn: "Our home, the only planet with life.", descNp: "हाम्रो घर, जीवन भएको ज्ञात एक मात्र ग्रह।", mass: "5.972 × 10^24 kg", day: "24 Hours" },
+            mars: { en: "Mars", np: "मंगल", descEn: "The Red Planet.", descNp: "रातो ग्रह।", mass: "6.39 × 10^23 kg", day: "24.6 Hours" },
+            jupiter: { en: "Jupiter", np: "बृहस्पति", descEn: "Largest planet, a gas giant.", descNp: "सौर्यमण्डलको सबैभन्दा ठूलो ग्रह।", mass: "1.898 × 10^27 kg", day: "9.9 Hours" },
+            saturn: { en: "Saturn", np: "शनि", descEn: "Famous for its beautiful rings.", descNp: "वलयहरू भएको सुन्दर ग्रह।", mass: "5.683 × 10^26 kg", day: "10.7 Hours" },
+            uranus: { en: "Uranus", np: "अरुण", descEn: "An ice giant rotating on its side.", descNp: "कोल्टो परेर घुम्ने ग्रह।", mass: "8.681 × 10^25 kg", day: "17.2 Hours" },
+            neptune: { en: "Neptune", np: "वरुण", descEn: "The farthest and windiest planet.", descNp: "सूर्यबाट सबैभन्दा टाढाको ग्रह।", mass: "1.024 × 10^26 kg", day: "16 Hours" }
+        };
+
+        const planets = [
+            { id: 'mercury', dist: 80, size: 8, color: '#94a3b8', speed: 1.5 },
+            { id: 'venus', dist: 120, size: 14, color: '#fbbf24', speed: 1.2 },
+            { id: 'earth', dist: 170, size: 15, color: '#3b82f6', speed: 1 },
+            { id: 'mars', dist: 220, size: 12, color: '#ef4444', speed: 0.8 },
+            { id: 'jupiter', dist: 300, size: 30, color: '#d97706', speed: 0.5 },
+            { id: 'saturn', dist: 380, size: 26, color: '#fcd34d', speed: 0.3, hasRings: true },
+            { id: 'uranus', dist: 460, size: 20, color: '#7dd3fc', speed: 0.2 },
+            { id: 'neptune', dist: 530, size: 19, color: '#3b82f6', speed: 0.15 }
+        ];
+
+        const container = document.getElementById('solar-system');
+        const zoomSlider = document.getElementById('zoom-slider');
+        const viewport = document.getElementById('viewport');
+
+        // State for Pan and Zoom
+        let scale = 0.8;
+        let posX = 0;
+        let posY = 0;
+        let isDragging = false;
+        let startX, startY;
+
+        function updateTransform() {
+            container.style.transform = `translate(${posX}px, ${posY}px) scale(${scale})`;
+            zoomSlider.value = scale;
+        }
+
+        function applyZoom(s) {
+            scale = parseFloat(s);
+            updateTransform();
+        }
+
+        function changeZoom(delta) {
+            scale = Math.min(Math.max(scale + delta, 0.1), 5);
+            updateTransform();
+        }
+
+        function resetView() {
+            scale = 0.8; posX = 0; posY = 0;
+            updateTransform();
+        }
+
+        // --- Panning Logic ---
+        viewport.addEventListener('mousedown', e => {
+            if (e.target.closest('.planet-container')) return;
+            isDragging = true;
+            startX = e.clientX - posX;
+            startY = e.clientY - posY;
+        });
+
+        window.addEventListener('mousemove', e => {
+            if (!isDragging) return;
+            posX = e.clientX - startX;
+            posY = e.clientY - startY;
+            updateTransform();
+        });
+
+        window.addEventListener('mouseup', () => isDragging = false);
+
+        // --- Mobile Panning & Pinch Logic ---
+        let initialDist = -1;
+        let initialScale = 0;
+
+        viewport.addEventListener('touchstart', e => {
+            if (e.touches.length === 1) {
+                isDragging = true;
+                startX = e.touches[0].clientX - posX;
+                startY = e.touches[0].clientY - posY;
+            } else if (e.touches.length === 2) {
+                isDragging = false;
+                initialDist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
+                initialScale = scale;
+            }
+        }, { passive: false });
+
+        viewport.addEventListener('touchmove', e => {
+            if (e.touches.length === 1 && isDragging) {
+                posX = e.touches[0].clientX - startX;
+                posY = e.touches[0].clientY - startY;
+                updateTransform();
+            } else if (e.touches.length === 2) {
+                const currentDist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
+                const diff = currentDist / initialDist;
+                scale = Math.min(Math.max(initialScale * diff, 0.1), 5);
+                updateTransform();
+            }
+            e.preventDefault();
+        }, { passive: false });
+
+        viewport.addEventListener('touchend', () => { isDragging = false; initialDist = -1; });
+
+        // Mouse Wheel Zoom
+        viewport.addEventListener('wheel', e => {
+            const delta = e.deltaY > 0 ? -0.1 : 0.1;
+            changeZoom(delta);
+        }, { passive: true });
+
+        // Initialize Space & Planets
+        function initSpace() {
+            const space = document.getElementById('space');
+            for(let i=0; i<250; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                const size = Math.random() * 2 + 0.5;
+                star.style.cssText = `width:${size}px; height:${size}px; left:${Math.random()*100}vw; top:${Math.random()*100}vh; --duration:${Math.random()*3+2}s;`;
+                space.appendChild(star);
+            }
+        }
+
+        function initSolarSystem() {
+            planets.forEach(p => {
+                const orbit = document.createElement('div');
+                orbit.className = 'orbit';
+                orbit.style.width = (p.dist * 2) + 'px';
+                orbit.style.height = (p.dist * 2) + 'px';
+                container.appendChild(orbit);
+
+                const pCont = document.createElement('div');
+                pCont.className = 'planet-container';
+                pCont.id = `cont-${p.id}`;
+                pCont.style.width = p.dist + 'px';
+                pCont.onclick = (e) => { e.stopPropagation(); showInfo(p.id); };
+
+                const pDiv = document.createElement('div');
+                pDiv.className = 'planet';
+                pDiv.style.width = p.size + 'px';
+                pDiv.style.height = p.size + 'px';
+                pDiv.style.backgroundColor = p.color;
+
+                if(p.hasRings) {
+                    const rings = document.createElement('div');
+                    rings.style.cssText = `position:absolute; width:${p.size*2.5}px; height:${p.size*0.8}px; border:3px solid rgba(255,255,255,0.2); border-radius:50%; top:50%; left:50%; transform:translate(-50%,-50%) rotateX(75deg); pointer-events:none;`;
+                    pDiv.appendChild(rings);
+                }
+
+                if(p.id === 'earth') {
+                    const mOrb = document.createElement('div');
+                    mOrb.className = 'moon-orbit'; mOrb.id = 'moon-orbit';
+                    mOrb.innerHTML = '<div class="moon"></div>';
+                    pDiv.appendChild(mOrb);
+                }
+
+                pCont.appendChild(pDiv);
+                const label = document.createElement('div');
+                label.className = 'planet-label';
+                label.innerText = planetData[p.id].en;
+                pDiv.appendChild(label);
+                container.appendChild(pCont);
+            });
+        }
+
+        let angles = planets.map(() => Math.random() * 360);
+        let moonAngle = 0;
+
+        function animate() {
+            planets.forEach((p, i) => {
+                angles[i] += p.speed * 0.1;
+                const cont = document.getElementById(`cont-${p.id}`);
+                cont.style.transform = `rotate(${angles[i]}deg)`;
+                const label = cont.querySelector('.planet-label');
+                label.style.transform = `translateX(-50%) rotate(${-angles[i]}deg)`;
+                if(p.id === 'earth') {
+                    moonAngle += 1;
+                    document.getElementById('moon-orbit').style.transform = `translate(-50%, -50%) rotate(${moonAngle}deg)`;
+                }
+            });
+            requestAnimationFrame(animate);
+        }
+
+        function showInfo(id) {
+            const d = planetData[id];
+            document.getElementById('planet-name-en').innerText = d.en;
+            document.getElementById('planet-name-np').innerText = `(${d.np})`;
+            document.getElementById('planet-desc-en').innerText = d.descEn;
+            document.getElementById('planet-desc-np').innerText = d.descNp;
+            document.getElementById('planet-mass').innerText = d.mass;
+            document.getElementById('planet-day').innerText = d.day;
+            document.getElementById('info-panel').classList.add('active');
+        }
+
+        function closeInfo() { document.getElementById('info-panel').classList.remove('active'); }
+
+        window.onload = () => {
+            initSpace();
+            initSolarSystem();
+            animate();
+            updateTransform();
+        };
+
+        window.addEventListener('click', (e) => {
+            if (!e.target.closest('.planet-container') && !e.target.closest('#info-panel') && !e.target.closest('.control-group')) closeInfo();
+        });
+    </script>
+</body>
+</html>
+

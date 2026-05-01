@@ -1,0 +1,632 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Phase Change Simulations</title>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --bg-panel: #1e293b;
+            --text-main: #f8fafc;
+            --accent: #38bdf8;
+            --accent-hot: #ef4444;
+            --accent-cold: #60a5fa;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            display: flex; flex-direction: column; align-items: center; padding: 20px 10px;
+            overflow-x: hidden;
+        }
+
+        header { text-align: center; margin-bottom: 25px; }
+        header h1 { font-size: 1.8rem; color: var(--text-main); letter-spacing: 1px; }
+
+        .sim-container {
+            width: 100%; max-width: 800px; background-color: var(--bg-panel);
+            border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            margin-bottom: 40px; overflow: hidden; border: 1px solid #334155;
+        }
+
+        .sim-header {
+            background-color: #0b1120; padding: 15px 20px;
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid #334155;
+        }
+
+        .sim-header h2 { font-size: 1.2rem; color: var(--accent); display: flex; align-items: center; gap: 10px;}
+        
+        .canvas-wrapper {
+            width: 100%; display: flex; justify-content: center; position: relative;
+            background: #000; overflow: hidden;
+        }
+
+        canvas { display: block; width: 100%; max-width: 800px; height: auto; }
+
+        .controls {
+            padding: 20px; background-color: #0f172a; border-top: 1px solid #334155;
+            display: flex; flex-direction: column; gap: 15px;
+        }
+
+        .slider-group { display: flex; flex-direction: column; gap: 8px; }
+        .slider-header { display: flex; justify-content: space-between; font-weight: bold; font-size: 0.95rem; }
+
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+        input[type=range]:focus { outline: none; }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 10px; background: #334155; border-radius: 5px; }
+        input[type=range]::-webkit-slider-thumb {
+            height: 28px; width: 28px; border-radius: 50%; cursor: pointer; -webkit-appearance: none; margin-top: -9px; border: 3px solid white;
+            transition: background 0.3s;
+        }
+
+        #heat-slider::-webkit-slider-thumb { background: var(--accent-hot); box-shadow: 0 0 10px rgba(239, 68, 68, 0.5); }
+        #plate-slider::-webkit-slider-thumb { background: var(--accent-hot); box-shadow: 0 0 10px rgba(239, 68, 68, 0.5); }
+
+        .btn-reset {
+            padding: 10px 15px; background: #334155; border: none; border-radius: 6px;
+            color: white; cursor: pointer; font-weight: bold; transition: 0.2s;
+        }
+        .btn-reset:hover { background: #475569; }
+
+        /* Theory Definitions Section */
+        .definitions-container {
+            width: 100%; max-width: 800px; background-color: var(--bg-panel);
+            border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            margin-bottom: 40px; overflow: hidden; border: 1px solid #334155;
+        }
+
+        .def-header {
+            background-color: #0b1120; padding: 15px 20px;
+            border-bottom: 1px solid #334155;
+        }
+
+        .def-header h2 { font-size: 1.4rem; color: #fde047; text-align: center; }
+
+        .def-content { padding: 25px; display: flex; flex-direction: column; gap: 20px; }
+
+        .def-box {
+            background-color: #0f172a; padding: 20px; border-radius: 8px;
+            border-left: 5px solid; line-height: 1.6;
+        }
+
+        .def-box.evap { border-left-color: #ef4444; }
+        .def-box.cond { border-left-color: #38bdf8; }
+
+        .def-box h3 { font-size: 1.2rem; margin-bottom: 10px; }
+        .def-box.evap h3 { color: #ef4444; }
+        .def-box.cond h3 { color: #38bdf8; }
+        .def-box strong { color: #cbd5e1; }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Phase Change Simulations</h1>
+    </header>
+
+    <!-- SIMULATION 1: EVAPORATION -->
+    <div class="sim-container">
+        <div class="sim-header">
+            <h2> Simulation 1: Evaporation</h2>
+            <button class="btn-reset" onclick="evapSim.reset()">Reset</button>
+        </div>
+        <div class="canvas-wrapper">
+            <canvas id="evapCanvas" width="800" height="450"></canvas>
+        </div>
+        <div class="controls">
+            <div class="slider-group">
+                <div class="slider-header">
+                    <span style="color: #ef4444;">Heat Source (Burner)</span>
+                    <span id="evap-temp-readout">20øC (Room Temp)</span>
+                </div>
+                <input type="range" id="heat-slider" min="20" max="120" value="20">
+            </div>
+        </div>
+    </div>
+
+    <!-- SIMULATION 2: CONDENSATION -->
+    <div class="sim-container">
+        <div class="sim-header">
+            <h2> Simulation 2: Condensation</h2>
+            <button class="btn-reset" onclick="condSim.reset()">Reset</button>
+        </div>
+        <div class="canvas-wrapper">
+            <canvas id="condCanvas" width="800" height="450"></canvas>
+        </div>
+        <div class="controls">
+            <div class="slider-group">
+                <div class="slider-header">
+                    <span id="cond-label" style="color: #ef4444;">Plate Temperature</span>
+                    <span id="cond-temp-readout" style="color: #ef4444;">Hot (Gas bounces off)</span>
+                </div>
+                <!-- 0 is Cold, 100 is Hot -->
+                <input type="range" id="plate-slider" min="0" max="100" value="100">
+            </div>
+        </div>
+    </div>
+
+    <!-- DEFINITIONS SECTION -->
+    <div class="definitions-container">
+        <div class="def-header">
+            <h2> Definitions to Remember</h2>
+        </div>
+        <div class="def-content">
+            <div class="def-box evap">
+                <h3> Evaporation ()</h3>
+                <p>The process by which a liquid changes into a gas (vapor) when heated. The heat energy makes the liquid molecules move faster and escape into the air.</p>
+                <p><strong>Example:</strong> Water boiling in a beaker over a burner and turning into steam.</p>
+            </div>
+            
+            <div class="def-box cond">
+                <h3> Condensation ( /    )</h3>
+                <p>The process by which a gas (vapor) changes back into a liquid when cooled. When the hot gas hits a cold surface, it loses its heat energy, slows down, and groups together to form water droplets.</p>
+                <p><strong>Example:</strong> Hot steam hitting a cold metal plate and turning into liquid water drops.</p>
+            </div>
+        </div>
+    </div>
+
+<script>
+    /** =========================================================================
+     * SIMULATION 1: EVAPORATION
+     * ========================================================================= */
+    const evapSim = (function() {
+        const canvas = document.getElementById('evapCanvas');
+        const ctx = canvas.getContext('2d');
+        const slider = document.getElementById('heat-slider');
+        const readout = document.getElementById('evap-temp-readout');
+
+        let temp = 20;
+        let waterVol = 200; // max 200
+        let time = 0;
+        let vapor = [];
+        let bubbles = [];
+
+        const bx = 400, by = 340, bw = 200, bh = 220; // Lifted beaker slightly
+
+        function reset() {
+            temp = 20;
+            slider.value = 20;
+            waterVol = 200;
+            vapor = [];
+            bubbles = [];
+            updateReadout();
+        }
+
+        function updateReadout() {
+            if (temp < 40) readout.innerText = `${Math.round(temp)}øC (Warming)`;
+            else if (temp < 95) readout.innerText = `${Math.round(temp)}øC (Evaporating)`;
+            else readout.innerText = `${Math.round(temp)}øC (Boiling!)`;
+        }
+
+        slider.addEventListener('input', (e) => {
+            temp = parseFloat(e.target.value);
+            updateReadout();
+        });
+
+        function update(dt) {
+            time += dt;
+            let evapRate = 0;
+            if (temp > 20) evapRate = (temp - 20) * 0.005;
+            if (temp >= 100) evapRate *= 3; 
+
+            if (waterVol > 0) {
+                waterVol -= evapRate * (dt * 60);
+                if (waterVol < 0) waterVol = 0;
+
+                if (Math.random() < evapRate * 2) {
+                    let surfaceY = by - waterVol;
+                    vapor.push({
+                        x: (bx - bw/2 + 10) + Math.random() * (bw - 20),
+                        y: surfaceY,
+                        vx: (Math.random() - 0.5) * 1.5,
+                        vy: -1 - Math.random() * 2 - (temp/50),
+                        radius: Math.random() * 3 + 2,
+                        life: 1.0
+                    });
+                }
+
+                if (temp >= 90 && Math.random() < (temp-80)*0.05) {
+                    bubbles.push({
+                        x: (bx - bw/2 + 20) + Math.random() * (bw - 40),
+                        y: by - 5,
+                        vx: (Math.random() - 0.5) * 0.5,
+                        vy: -2 - Math.random() * 3,
+                        radius: Math.random() * 4 + 2
+                    });
+                }
+            }
+
+            for (let i = vapor.length - 1; i >= 0; i--) {
+                let v = vapor[i];
+                v.x += v.vx + Math.sin(time * 5 + v.y)*0.5;
+                v.y += v.vy;
+                v.radius += 0.05; 
+                v.life -= 0.005;
+                if (v.life <= 0) vapor.splice(i, 1);
+            }
+
+            let surfaceY = by - waterVol;
+            for (let i = bubbles.length - 1; i >= 0; i--) {
+                let b = bubbles[i];
+                b.x += b.vx;
+                b.y += b.vy;
+                if (b.y <= surfaceY) {
+                    bubbles.splice(i, 1);
+                    for(let j=0; j<3; j++) {
+                        vapor.push({
+                            x: b.x, y: surfaceY,
+                            vx: (Math.random() - 0.5) * 3, vy: -2 - Math.random()*2,
+                            radius: 3, life: 0.8
+                        });
+                    }
+                }
+            }
+        }
+
+        function draw() {
+            let bgGrad = ctx.createLinearGradient(0, 0, 0, 450);
+            bgGrad.addColorStop(0, '#020617');
+            bgGrad.addColorStop(1, '#0f172a');
+            ctx.fillStyle = bgGrad;
+            ctx.fillRect(0, 0, 800, 450);
+
+            // --- BUNSEN BURNER SETUP ---
+            // Stand (Wire Gauze)
+            ctx.fillStyle = '#64748b';
+            ctx.fillRect(bx - bw/2 - 20, by, bw + 40, 6);
+            
+            // Stand Legs
+            ctx.fillStyle = '#475569';
+            ctx.fillRect(bx - bw/2 - 15, by + 6, 8, 90);
+            ctx.fillRect(bx + bw/2 + 7, by + 6, 8, 90);
+            
+            // Burner Body
+            ctx.fillStyle = '#1e293b';
+            ctx.fillRect(bx - 20, by + 65, 40, 25); // base
+            ctx.fillStyle = '#94a3b8';
+            ctx.fillRect(bx - 10, by + 35, 20, 30); // nozzle
+
+            // Flame
+            let heatIntensity = (temp - 20) / 100; // 0 to 1
+            if (heatIntensity > 0) {
+                let flameH = heatIntensity * 32;
+                let flicker = Math.sin(time * 20) * 2;
+
+                // Outer Flame
+                ctx.fillStyle = temp > 80 ? 'rgba(56, 189, 248, 0.8)' : 'rgba(249, 115, 22, 0.8)';
+                ctx.beginPath();
+                ctx.moveTo(bx - 10, by + 35);
+                ctx.quadraticCurveTo(bx - 15 + flicker, by + 35 - flameH, bx, by + 35 - flameH - 5);
+                ctx.quadraticCurveTo(bx + 15 + flicker, by + 35 - flameH, bx + 10, by + 35);
+                ctx.fill();
+
+                // Inner Flame
+                ctx.fillStyle = temp > 80 ? 'rgba(186, 230, 253, 0.9)' : 'rgba(253, 224, 71, 0.9)';
+                ctx.beginPath();
+                ctx.moveTo(bx - 5, by + 35);
+                ctx.quadraticCurveTo(bx - 8 + flicker*0.5, by + 35 - flameH*0.6, bx, by + 35 - flameH*0.8);
+                ctx.quadraticCurveTo(bx + 8 + flicker*0.5, by + 35 - flameH*0.6, bx + 5, by + 35);
+                ctx.fill();
+            }
+
+            // --- WATER & BEAKER ---
+            let surfaceY = by - waterVol;
+            if (waterVol > 0) {
+                let waterGrad = ctx.createLinearGradient(0, surfaceY, 0, by);
+                waterGrad.addColorStop(0, 'rgba(56, 189, 248, 0.4)');
+                waterGrad.addColorStop(1, 'rgba(2, 132, 199, 0.8)');
+                ctx.fillStyle = waterGrad;
+                
+                ctx.beginPath();
+                ctx.moveTo(bx - bw/2 + 5, surfaceY);
+                for(let i=0; i<=bw-10; i+=10) {
+                    let wave = Math.sin(time*10 + i*0.05) * (temp/20) * (waterVol > 0 ? 1 : 0);
+                    ctx.lineTo(bx - bw/2 + 5 + i, surfaceY + wave);
+                }
+                ctx.lineTo(bx + bw/2 - 5, surfaceY);
+                ctx.lineTo(bx + bw/2 - 5, by - 5);
+                ctx.lineTo(bx - bw/2 + 5, by - 5);
+                ctx.fill();
+
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+                ctx.lineWidth = 1.5;
+                bubbles.forEach(b => {
+                    ctx.beginPath(); ctx.arc(b.x, b.y, b.radius, 0, Math.PI*2); ctx.stroke();
+                });
+            }
+
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+            ctx.lineWidth = 4;
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+            ctx.beginPath();
+            ctx.moveTo(bx - bw/2, by - bh);
+            ctx.lineTo(bx - bw/2, by);
+            ctx.quadraticCurveTo(bx, by+10, bx + bw/2, by);
+            ctx.lineTo(bx + bw/2, by - bh);
+            ctx.stroke();
+            ctx.fill();
+
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+            ctx.fillRect(bx - bw/2 + 10, by - bh + 20, 10, bh - 30);
+
+            // --- VAPOR CLOUDS ---
+            ctx.globalCompositeOperation = 'screen';
+            vapor.forEach(v => {
+                let grad = ctx.createRadialGradient(v.x, v.y, 0, v.x, v.y, v.radius);
+                grad.addColorStop(0, `rgba(226, 232, 240, ${v.life})`);
+                grad.addColorStop(1, `rgba(226, 232, 240, 0)`);
+                ctx.fillStyle = grad;
+                ctx.beginPath(); ctx.arc(v.x, v.y, v.radius, 0, Math.PI*2); ctx.fill();
+            });
+            ctx.globalCompositeOperation = 'source-over';
+        }
+
+        return { update, draw, reset };
+    })();
+
+    /** =========================================================================
+     * SIMULATION 2: CONDENSATION (Vapor striking plate)
+     * ========================================================================= */
+    const condSim = (function() {
+        const canvas = document.getElementById('condCanvas');
+        const ctx = canvas.getContext('2d');
+        const slider = document.getElementById('plate-slider');
+        const readout = document.getElementById('cond-temp-readout');
+        const label = document.getElementById('cond-label');
+
+        let time = 0;
+        let plateTemp = 100; 
+        let glassVolume = 0; 
+        let particles = [];
+
+        const plateStartX = 350, plateStartY = 100;
+        const plateEndX = 550, plateEndY = 250;
+        const plateSlope = (plateEndY - plateStartY) / (plateEndX - plateStartX); 
+        const plateIntercept = plateStartY - (plateSlope * plateStartX); 
+
+        const glass = { x: 500, y: 320, w: 100, h: 100 };
+
+        function reset() {
+            plateTemp = 100;
+            slider.value = 100;
+            glassVolume = 0;
+            particles = [];
+            updateUI();
+        }
+
+        function updateUI() {
+            let thumbColor = '#38bdf8'; 
+            if (plateTemp > 70) {
+                readout.innerText = "Hot (Gas bounces off)";
+                readout.style.color = "#ef4444";
+                label.style.color = "#ef4444";
+                thumbColor = '#ef4444';
+            } else if (plateTemp > 40) {
+                readout.innerText = "Warm (Slight condensation)";
+                readout.style.color = "#f59e0b";
+                label.style.color = "#f59e0b";
+                thumbColor = '#f59e0b';
+            } else {
+                readout.innerText = "Cold (Condensation occurs!)";
+                readout.style.color = "#38bdf8";
+                label.style.color = "#38bdf8";
+            }
+
+            const styleId = 'dynamic-thumb-style';
+            let styleEl = document.getElementById(styleId);
+            if(!styleEl) {
+                styleEl = document.createElement('style');
+                styleEl.id = styleId;
+                document.head.appendChild(styleEl);
+            }
+            styleEl.innerHTML = `#plate-slider::-webkit-slider-thumb { background: ${thumbColor} !important; box-shadow: 0 0 10px ${thumbColor} !important; }`;
+        }
+
+        slider.addEventListener('input', (e) => {
+            plateTemp = parseInt(e.target.value);
+            updateUI();
+        });
+
+        function update(dt) {
+            time += dt;
+
+            // Spawn Vapor
+            if (Math.random() < 0.6) {
+                particles.push({
+                    x: 80,
+                    y: 190 + Math.random() * 40,
+                    vx: 150 + Math.random() * 50, 
+                    vy: -20 + Math.random() * 40, 
+                    radius: 10 + Math.random() * 15,
+                    opacity: 0.5 + Math.random() * 0.3,
+                    state: 'gas',
+                    life: 3.0
+                });
+            }
+
+            for (let i = particles.length - 1; i >= 0; i--) {
+                let p = particles[i];
+                
+                if (p.state === 'gas') {
+                    p.x += p.vx * dt;
+                    p.y += p.vy * dt;
+                    p.radius += 10 * dt; 
+                    p.life -= dt;
+
+                    if (p.life <= 0 || p.y < -50 || p.x > canvas.width + 50) {
+                        particles.splice(i, 1);
+                        continue;
+                    }
+
+                    // Collision with Plate
+                    if (p.x >= plateStartX && p.x <= plateEndX) {
+                        let plateYAtX = (plateSlope * p.x) + plateIntercept;
+                        if (p.y <= plateYAtX + 15 && p.y >= plateYAtX - 15) {
+                            if (plateTemp > 50) {
+                                p.vy = 100 + Math.random() * 50; 
+                                p.vx = 50 + Math.random() * 50;
+                            } else {
+                                p.state = 'liquid';
+                                p.radius = 3 + Math.random() * 2; 
+                                p.y = plateYAtX + p.radius; 
+                                p.vx = 0; p.vy = 0;
+                            }
+                        }
+                    }
+
+                } else if (p.state === 'liquid') {
+                    if (p.x < plateEndX) {
+                        let speed = 40 + (p.radius * 5); 
+                        let dx = 1;
+                        let dy = plateSlope; 
+                        let mag = Math.sqrt(dx*dx + dy*dy);
+                        
+                        p.x += (dx/mag) * speed * dt;
+                        p.y += (dy/mag) * speed * dt;
+                        p.y = (plateSlope * p.x) + plateIntercept + p.radius;
+
+                    } else {
+                        // Droplet falling off the plate
+                        p.x = plateEndX;
+                        p.vy += 400 * dt; // Gravity
+                        p.y += p.vy * dt;
+
+                        // Check collision with beaker
+                        if (p.x >= glass.x && p.x <= glass.x + glass.w) {
+                            let beakerSurface = glass.y + glass.h - ((glassVolume / 100) * glass.h);
+                            
+                            // Absorb droplets
+                            if (p.y >= beakerSurface) {
+                                particles.splice(i, 1);
+                                // Cap volume at 90% to prevent visual overflow
+                                if (glassVolume < 90) glassVolume += 0.5; 
+                                continue;
+                            }
+                        }
+
+                        if (p.y > canvas.height + 20) {
+                            particles.splice(i, 1);
+                        }
+                    }
+                }
+            }
+        }
+
+        function draw() {
+            let bgGrad = ctx.createLinearGradient(0, 0, 0, 450);
+            bgGrad.addColorStop(0, '#020617');
+            bgGrad.addColorStop(1, '#0f172a');
+            ctx.fillStyle = bgGrad;
+            ctx.fillRect(0, 0, 800, 450);
+
+            // Source Pipe
+            ctx.fillStyle = '#475569';
+            ctx.fillRect(-20, 180, 100, 60);
+            ctx.fillStyle = '#1e293b';
+            ctx.beginPath(); ctx.ellipse(80, 210, 10, 30, 0, 0, Math.PI*2); ctx.fill();
+
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.font = '14px Arial';
+            ctx.fillText("Hot Water", 10, 170);
+            ctx.fillText("Vapor", 25, 190);
+
+            // Cold Plate
+            ctx.save();
+            let r = plateTemp > 50 ? 239 : 56;
+            let g = plateTemp > 50 ? 68 : 189;
+            let b = plateTemp > 50 ? 68 : 248;
+            
+            if (plateTemp <= 50) {
+                r += (50 - plateTemp) * 2;
+                g += (50 - plateTemp) * 1;
+            }
+
+            ctx.strokeStyle = `rgb(${r}, ${g}, ${b})`;
+            ctx.lineWidth = 14;
+            ctx.lineCap = 'round';
+            ctx.beginPath(); ctx.moveTo(plateStartX, plateStartY); ctx.lineTo(plateEndX, plateEndY); ctx.stroke();
+
+            ctx.strokeStyle = plateTemp > 50 ? 'rgba(253, 224, 71, 0.8)' : 'rgba(255, 255, 255, 0.8)';
+            ctx.lineWidth = 4;
+            ctx.beginPath(); ctx.moveTo(plateStartX, plateStartY); ctx.lineTo(plateEndX, plateEndY); ctx.stroke();
+            ctx.restore();
+
+            ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+            ctx.font = 'bold 16px Arial';
+            ctx.fillText("Metal Plate", 480, 130);
+
+            // Collecting Glass
+            if (glassVolume > 0) {
+                let waterH = (glassVolume / 100) * glass.h;
+                ctx.fillStyle = 'rgba(56, 189, 248, 0.6)';
+                ctx.fillRect(glass.x, glass.y + glass.h - waterH, glass.w, waterH);
+                
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)'; ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.moveTo(glass.x, glass.y + glass.h - waterH); ctx.lineTo(glass.x + glass.w, glass.y + glass.h - waterH); ctx.stroke();
+            }
+
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.lineWidth = 4;
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.beginPath();
+            ctx.moveTo(glass.x, glass.y);
+            ctx.lineTo(glass.x, glass.y + glass.h);
+            ctx.quadraticCurveTo(glass.x + glass.w/2, glass.y + glass.h + 10, glass.x + glass.w, glass.y + glass.h);
+            ctx.lineTo(glass.x + glass.w, glass.y);
+            ctx.stroke(); ctx.fill();
+
+            ctx.fillStyle = 'white';
+            ctx.font = '14px Arial';
+            ctx.fillText("Collecting Glass", glass.x + 5, glass.y + glass.h + 30);
+
+            // Particles
+            particles.forEach(p => {
+                if (p.state === 'gas') {
+                    let grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.radius);
+                    grad.addColorStop(0, `rgba(226, 232, 240, ${p.opacity})`);
+                    grad.addColorStop(1, `rgba(226, 232, 240, 0)`);
+                    ctx.fillStyle = grad;
+                    ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI*2); ctx.fill();
+                } else if (p.state === 'liquid') {
+                    ctx.fillStyle = 'rgba(56, 189, 248, 0.9)';
+                    ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI*2); ctx.fill();
+                }
+            });
+        }
+
+        return { update, draw, reset };
+    })();
+
+    /** =========================================================================
+     * GLOBAL ANIMATION LOOP
+     * ========================================================================= */
+    let lastTime = 0;
+    function loop(timestamp) {
+        let dt = (timestamp - lastTime) / 1000;
+        if (!lastTime) dt = 0;
+        lastTime = timestamp;
+
+        if (dt > 0.1) dt = 0.1;
+
+        evapSim.update(dt);
+        evapSim.draw();
+
+        condSim.update(dt);
+        condSim.draw();
+
+        requestAnimationFrame(loop);
+    }
+
+    requestAnimationFrame(loop);
+    condSim.reset(); 
+
+</script>
+</body>
+</html>
+
