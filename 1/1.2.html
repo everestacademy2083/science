@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -37,33 +36,10 @@
         header h1 { font-size: 1.8rem; margin-bottom: 8px; color: #fde68a; }
         header p { font-size: 1.05rem; color: #cbd5e1; }
 
-        /* --- THEORY SECTION --- */
-        .theory-section { padding: 25px; background-color: #f0fdfa; border-bottom: 2px solid #cbd5e1; }
-        .theory-box { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; border-left: 5px solid var(--accent-blue);}
-        .theory-box.green { border-left-color: var(--accent-green); }
-        
-        .theory-box h2 { color: #1e293b; font-size: 1.4rem; margin-bottom: 10px; }
-        .theory-box p { color: #334155; line-height: 1.6; font-size: 1.05rem;}
-        .theory-box ul { padding-left: 20px; margin-top: 10px; color: #334155; line-height: 1.7; font-size: 1.05rem;}
-        .theory-box li { margin-bottom: 8px; }
-
-        /* --- LAB REPORT SECTION --- */
-        .report-section { padding: 30px 25px; background-color: white; line-height: 1.7; }
-        .report-section h2 { color: #b45309; font-size: 1.6rem; margin-bottom: 20px; border-bottom: 2px solid #fde68a; padding-bottom: 5px; text-align: center;}
-        
-        .report-step { margin-bottom: 18px; }
-        .report-step strong { color: var(--accent-blue); font-size: 1.15rem; display: block; margin-bottom: 4px; }
-        .report-step p, .report-step ul { color: #334155; font-size: 1.05rem;}
-        .report-step ul { padding-left: 25px; }
-
-        .precaution-box {
-            background-color: #fffbeb; border: 1px solid #f59e0b; border-left: 5px solid #d97706;
-            padding: 15px; border-radius: 6px; margin-top: 25px;
-        }
-        .precaution-box strong { color: #b45309; font-size: 1.1rem;}
-
-        /* --- SIMULATION SECTION --- */
-        .sim-header { background-color: #1e293b; color: white; padding: 15px; text-align: center; border-top: 4px solid var(--primary);}
+        /* --- SIMULATION SECTION (MOVED TO TOP) --- */
+        .sim-header { background-color: #f8fafc; color: #0f172a; padding: 25px 15px 10px 15px; text-align: center; border-bottom: 2px solid #e2e8f0;}
+        .sim-header h2 { color: var(--primary); font-size: 1.6rem; }
+        .sim-header p { font-size: 1.05rem; color: #64748b; margin-top:5px; }
         
         .canvas-wrapper {
             width: 100%; background: #e2e8f0; display: flex; justify-content: center;
@@ -74,6 +50,7 @@
         .controls {
             padding: 20px; background-color: #f8fafc;
             display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;
+            border-bottom: 5px solid var(--primary);
         }
 
         .status-panel { width: 100%; text-align: center; background: #fffbeb; border: 1px solid #fde68a; padding: 10px; border-radius: 6px; margin-bottom: 15px; font-weight: bold; color: #b45309; font-size: 1.1rem;}
@@ -86,6 +63,34 @@
         button.action-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #0369a1; }
         button.action-btn:disabled { background-color: #cbd5e1; color: #64748b; box-shadow: 0 4px 0 #94a3b8; cursor: not-allowed; }
 
+        /* --- THEORY SECTION --- */
+        .theory-section { padding: 25px; background-color: #f0fdfa; border-bottom: 2px solid #cbd5e1; }
+        .theory-box { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; border-left: 5px solid var(--accent-blue);}
+        .theory-box.green { border-left-color: var(--accent-green); }
+        
+        .theory-box h2 { color: #1e293b; font-size: 1.4rem; margin-bottom: 10px; }
+        .theory-box p { color: #334155; line-height: 1.6; font-size: 1.05rem; margin-bottom: 8px;}
+        .theory-box ul { padding-left: 0; list-style-type: none; margin-top: 10px; color: #334155; line-height: 1.7; font-size: 1.05rem;}
+        .theory-box li { margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px dashed #e2e8f0; }
+        
+        .nepali-text { color: #0284c7; font-weight: 500; font-size: 1.1rem; }
+
+        /* --- LAB REPORT SECTION --- */
+        .report-section { padding: 30px 25px; background-color: white; line-height: 1.7; }
+        .report-section h2 { color: #b45309; font-size: 1.6rem; margin-bottom: 20px; border-bottom: 2px solid #fde68a; padding-bottom: 5px; text-align: center;}
+        
+        .report-step { margin-bottom: 22px; }
+        .report-step strong { color: var(--accent-blue); font-size: 1.15rem; display: block; margin-bottom: 6px; }
+        .report-step p { color: #334155; font-size: 1.05rem; margin-bottom: 6px;}
+        .report-step ul { padding-left: 0; list-style-type: none; }
+        .report-step ul li { margin-bottom: 10px; }
+
+        .precaution-box {
+            background-color: #fffbeb; border: 1px solid #f59e0b; border-left: 5px solid #d97706;
+            padding: 15px; border-radius: 6px; margin-top: 25px;
+        }
+        .precaution-box strong { color: #b45309; font-size: 1.1rem;}
+
     </style>
 </head>
 <body>
@@ -93,81 +98,13 @@
 <div class="container">
     <header>
         <h1>Science Practical Work</h1>
-        <p>Report Writing Theory & Realistic Lab Simulation</p>
+        <p>Realistic Lab Simulation & Bilingual Report Writing</p>
     </header>
 
-    <!-- SECTION 1: THEORY OF REPORT WRITING -->
-    <div class="theory-section">
-        <div class="theory-box">
-            <h2>📘 What is a report?</h2>
-            <p>The detailed description of objective, materials required, method/procedure, result, conclusion etc. after doing a practical work is called a report.</p>
-        </div>
-
-        <div class="theory-box green">
-            <h2>📝 Why do we write a report?</h2>
-            <ul>
-                <li><strong>1.</strong> To submit the details of the practical work.</li>
-                <li><strong>2.</strong> To share the finding of the scientific study and research clearly.</li>
-                <li><strong>3.</strong> To compare the result of the experiment with the objective.</li>
-                <li><strong>4.</strong> To record the conclusion and challenges of the experiment.</li>
-            </ul>
-        </div>
-    </div>
-
-    <!-- SECTION 2: THE LABORATORY REPORT -->
-    <div class="report-section">
-        <h2>Laboratory Report</h2>
-        
-        <div class="report-step"><strong>1. Title</strong><p>Preparation of Milk Tea</p></div>
-        
-        <div class="report-step"><strong>2. Objective</strong><p>To prepare a cup of sweet milk tea and observe the process of dissolving and boiling.</p></div>
-
-        <div class="report-step"><strong>3. Required Materials</strong><p>Water, milk, tea leaves, sugar, saucepan (kettle), gas stove, strainer (chhalni), and a cup.</p></div>
-
-        <div class="report-step">
-            <strong>4. Figure</strong>
-            <p><em>(Refer to the interactive simulation below as the living figure of this experiment!)</em></p>
-        </div>
-
-        <div class="report-step">
-            <strong>5. Procedure</strong>
-            <ul>
-                <li>Half a cup of water was poured into the saucepan and kept on the gas stove to heat.</li>
-                <li>Once the water started boiling, one spoon of tea leaves and two spoons of sugar were added.</li>
-                <li>The mixture was allowed to boil for two minutes.</li>
-                <li>Half a cup of milk was added to the boiling mixture.</li>
-                <li>The mixture was boiled again until it rose up and the color changed completely.</li>
-                <li>The gas stove was turned off, and the tea was filtered into a cup using a strainer.</li>
-            </ul>
-        </div>
-
-        <div class="report-step">
-            <strong>6. Observation</strong>
-            <p>When tea leaves were added to the boiling water, the colorless water quickly turned dark red/black. When sugar was added, it disappeared into the liquid. After adding milk and boiling, the mixture bubbled strongly, gave off a pleasant smell, and the final color became creamy brown. The used tea leaves remained stuck in the strainer.</p>
-        </div>
-
-        <div class="report-step">
-            <strong>7. Analysis</strong>
-            <p>The heat energy caused the water to boil. The hot water extracted the color and flavor from the solid tea leaves. The solid sugar completely dissolved into the hot liquid (acting as a solute in a solvent). The strainer allowed the liquid to pass through but blocked the solid tea leaves (filtration).</p>
-        </div>
-
-        <div class="report-step"><strong>8. Result</strong><p>A hot, brown-colored liquid mixture known as milk tea was successfully prepared.</p></div>
-
-        <div class="report-step"><strong>9. Conclusion</strong><p>Heat speeds up the process of extracting flavors and dissolving solids (like sugar) into liquids. Solid particles can be separated from a liquid using the process of filtration.</p></div>
-
-        <div class="precaution-box">
-            <strong>⚠️ 10. Precaution</strong>
-            <ul>
-                <li>The hot saucepan should be handled carefully using a thick cloth or its handle to prevent burning hands.</li>
-                <li>The gas stove should be turned off safely immediately after the tea is ready.</li>
-            </ul>
-        </div>
-    </div>
-
-    <!-- SECTION 3: REALISTIC SIMULATION -->
     <div class="sim-header">
         <h2>Interactive Laboratory Simulation</h2>
-        <p style="font-size: 0.95rem; color:#cbd5e1; margin-top:5px;">Follow the procedure to make tea. Watch the colors blend!</p>
+        <p>Follow the procedure to make tea. Watch the colors blend!</p>
+        <p class="nepali-text">चिया बनाउने प्रक्रिया पालना गर्नुहोस् र रङ्गहरू कसरी मिसिन्छन् हेर्नुहोस्!</p>
     </div>
 
     <div class="canvas-wrapper">
@@ -183,6 +120,111 @@
         <button id="btn-filter" class="action-btn" disabled>Turn Off & Filter</button>
         <button id="btn-reset" class="action-btn" style="background-color: #ef4444; box-shadow: 0 4px 0 #b91c1c; display: none;">Restart Experiment</button>
     </div>
+
+    <div class="theory-section">
+        <div class="theory-box">
+            <h2>📘 What is a report? / प्रतिवेदन भनेको के हो?</h2>
+            <p><strong>English:</strong> A report is a simple, detailed paper written after doing a practical experiment. It explains what materials we used, what steps we followed, and what final results we found.</p>
+            <p class="nepali-text"><strong>नेपाली:</strong> प्रतिवेदन (Report) भनेको प्रयोगात्मक कार्य गरिसकेपछि लेखिने विस्तृत विवरण हो। यसमा हामीले के सामग्री प्रयोग गर्यौं, कुन तरिका अपनायौं र के नतिजा पायौं भन्ने कुरा समावेश हुन्छ।</p>
+        </div>
+
+        <div class="theory-box green">
+            <h2>📝 Why do we write a report? / हामी किन प्रतिवेदन लेख्छौं?</h2>
+            <ul>
+                <li>
+                    <strong>English 1:</strong> To show the complete details of the practical work.<br>
+                    <span class="nepali-text"><strong>नेपाली १:</strong> प्रयोगात्मक कार्यको सम्पूर्ण विवरण बुझाउन।</span>
+                </li>
+                <li>
+                    <strong>English 2:</strong> To easily share what we learned from the scientific experiment.<br>
+                    <span class="nepali-text"><strong>नेपाली २:</strong> वैज्ञानिक प्रयोगबाट सिकेका कुराहरु स्पष्ट रूपमा बाँड्न।</span>
+                </li>
+                <li>
+                    <strong>English 3:</strong> To check if our final result matches our main objective.<br>
+                    <span class="nepali-text"><strong>नेपाली ३:</strong> प्रयोगको अन्तिम नतिजालाई हाम्रो मुख्य उद्देश्यसँग दाँज्न।</span>
+                </li>
+                <li>
+                    <strong>English 4:</strong> To write down the final conclusion and any problems we faced.<br>
+                    <span class="nepali-text"><strong>नेपाली ४:</strong> प्रयोगको अन्तिम निष्कर्ष र काम गर्दा आएका समस्याहरू लेखेर राख्न।</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="report-section">
+        <h2>Laboratory Report / प्रयोगशाला प्रतिवेदन</h2>
+        
+        <div class="report-step">
+            <strong>1. Title / शीर्षक</strong>
+            <p><strong>English:</strong> Preparation of Milk Tea</p>
+            <p class="nepali-text"><strong>नेपाली:</strong> दूध चिया बनाउने विधि</p>
+        </div>
+        
+        <div class="report-step">
+            <strong>2. Objective / उद्देश्य</strong>
+            <p><strong>English:</strong> To make sweet milk tea and watch how solid things dissolve and liquids boil.</p>
+            <p class="nepali-text"><strong>नेपाली:</strong> मीठो दूध चिया बनाउन र ठोस वस्तुहरू घुल्ने तथा उम्लिने प्रक्रिया अवलोकन गर्न।</p>
+        </div>
+
+        <div class="report-step">
+            <strong>3. Required Materials / आवश्यक सामग्रीहरू</strong>
+            <p><strong>English:</strong> Water, milk, tea leaves, sugar, kettle (saucepan), gas stove, strainer, and a cup.</p>
+            <p class="nepali-text"><strong>नेपाली:</strong> पानी, दूध, चियापत्ती, चिनी, ससप्यान (केतली), ग्यास चुल्हो, छान्ने जाली (छल्नी), र कप।</p>
+        </div>
+
+        <div class="report-step">
+            <strong>4. Procedure / विधि (प्रक्रिया)</strong>
+            <ul>
+                <li>
+                    <strong>English:</strong> First, half a cup of water was put in the kettle and heated on the stove.<br>
+                    <span class="nepali-text"><strong>नेपाली:</strong> सुरुमा, आधा कप पानी ससप्यानमा राखेर ग्यास चुल्होमा तताइयो।</span>
+                </li>
+                <li>
+                    <strong>English:</strong> When the water started boiling, one spoon of tea leaves and two spoons of sugar were added.<br>
+                    <span class="nepali-text"><strong>नेपाली:</strong> पानी उम्लन थालेपछि एक चम्चा चियापत्ती र दुई चम्चा चिनी हालियो।</span>
+                </li>
+                <li>
+                    <strong>English:</strong> Half a cup of milk was poured in, and it was allowed to boil again.<br>
+                    <span class="nepali-text"><strong>नेपाली:</strong> आधा कप दूध थपियो र फेरि उम्लन दिइयो।</span>
+                </li>
+                <li>
+                    <strong>English:</strong> Finally, the gas was turned off, and the tea was filtered into a cup using a strainer.<br>
+                    <span class="nepali-text"><strong>नेपाली:</strong> अन्त्यमा ग्यास बन्द गरियो र छल्नीको प्रयोग गरी चियालाई कपमा छानियो।</span>
+                </li>
+            </ul>
+        </div>
+
+        <div class="report-step">
+            <strong>5. Observation / अवलोकन</strong>
+            <p><strong>English:</strong> The clear water turned dark red when tea leaves were added. The solid sugar quickly disappeared in the hot water. After adding milk and boiling it, the color changed to creamy brown and gave off a nice smell.</p>
+            <p class="nepali-text"><strong>नेपाली:</strong> उम्लेको पानीमा चियापत्ती हाल्दा पानी गाढा रातो/कालो भयो। ठोस चिनी तातो पानीमा पूर्ण रूपमा हरायो। दूध राखेर उमालेपछि यसको रङ्ग खैरो भयो र राम्रो बासना आयो।</p>
+        </div>
+
+        <div class="report-step">
+            <strong>6. Analysis / विश्लेषण</strong>
+            <p><strong>English:</strong> Heat energy makes water boil and extracts flavor. Sugar melts completely into the hot water (it acts as a solute in a solvent). The strainer blocks the solid tea leaves but lets the liquid tea pass through (this is called filtration).</p>
+            <p class="nepali-text"><strong>नेपाली:</strong> ताप शक्तिले पानीलाई उमाल्न र स्वाद निकाल्न मद्दत गर्छ। ठोस चिनी तातो झोलमा पूर्ण रूपमा घुल्छ। छल्नीले ठोस चियापत्तीलाई रोक्छ तर झोललाई छिर्न दिन्छ (यसलाई छान्ने प्रक्रिया भनिन्छ)।</p>
+        </div>
+
+        <div class="report-step">
+            <strong>7. Result / नतिजा</strong>
+            <p><strong>English:</strong> A hot, sweet, brown-colored liquid mixture called milk tea was successfully made.</p>
+            <p class="nepali-text"><strong>नेपाली:</strong> तातो, मीठो र खैरो रङ्गको झोल (दूध चिया) सफलतापूर्वक तयार भयो।</p>
+        </div>
+
+        <div class="report-step">
+            <strong>8. Conclusion / निष्कर्ष</strong>
+            <p><strong>English:</strong> Heat speeds up the process of dissolving solids into liquids. We can separate solid particles from a liquid by using the simple process of filtration.</p>
+            <p class="nepali-text"><strong>नेपाली:</strong> तापले वस्तुहरूलाई छिटो घुलाउन मद्दत गर्छ। छान्ने प्रक्रियाबाट तरल पदार्थबाट ठोस कणहरूलाई सजिलै छुट्याउन सकिन्छ।</p>
+        </div>
+
+        <div class="precaution-box">
+            <strong>⚠️ 9. Precaution / सावधानी</strong>
+            <p><strong>English:</strong> Handle the hot kettle carefully using a thick cloth to avoid burning your hands. Turn off the stove immediately after the tea is ready.</p>
+            <p class="nepali-text" style="margin-top: 8px;"><strong>नेपाली:</strong> हात जल्नबाट बच्न तातो भाडालाई बाक्लो कपडा वा ह्यान्डलको सहायताले समात्नुपर्छ। चिया तयार भएपछि तुरुन्तै ग्यास बन्द गर्नुपर्छ।</p>
+        </div>
+    </div>
+
 </div>
 
 <script>
