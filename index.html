@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Class 7 Science - Everest Academy</title>
+    
+    <style>
+        /* CLAYMORPHISM & BASE CSS */
+        :root {
+            --bg-color: #e0e5ec;
+            --clay-shadow-out: 9px 9px 16px rgb(163,177,198,0.6), -9px -9px 16px rgba(255,255,255, 0.5);
+            --clay-shadow-in: inset 6px 6px 10px 0 rgba(163, 177, 198, 0.5), inset -6px -6px 10px 0 rgba(255, 255, 255, 0.5);
+            --primary-text: #4a4a4a;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--primary-text);
+            margin: 0;
+            padding: 5vh 15px; 
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; 
+            min-height: 100vh;
+            font-size: 16px;
+            -webkit-user-select: none;
+            user-select: none;
+            box-sizing: border-box;
+        }
+
+        /* Screen Management */
+        .screen { display: none; width: 100%; max-width: 500px; transition: all 0.3s ease; }
+        .active-screen { display: block; }
+
+        /* Clay Components */
+        .clay-card {
+            background-color: var(--bg-color);
+            border-radius: 20px;
+            padding: 25px 20px;
+            box-shadow: var(--clay-shadow-out);
+            text-align: center;
+            margin-bottom: 20px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .clay-btn {
+            padding: 15px 20px;
+            margin-top: 15px;
+            border: none;
+            border-radius: 15px;
+            background-color: var(--bg-color);
+            box-shadow: var(--clay-shadow-out);
+            color: var(--primary-text);
+            font-weight: bold;
+            font-size: 0.95em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .clay-btn:active { box-shadow: var(--clay-shadow-in); transform: scale(0.98); }
+        .clay-btn.back-btn { margin-top: 20px; color: #888; box-shadow: var(--clay-shadow-in); }
+
+        /* Typography & Utilities */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 20px;
+        }
+        
+        .full-width-btn {
+            grid-column: 1 / -1;
+            background-color: #f1f2f6;
+            border: 2px dashed #a4b0be;
+            color: #ff4757; 
+            font-size: 1.1em;
+        }
+
+        .list-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 15px;
+            padding: 5px;
+        }
+
+        .list-btn { 
+            text-align: left; 
+            padding: 18px 20px; 
+            font-size: 0.95em; 
+        }
+
+        /* Magical Screen Buttons */
+        .magic-btn-science { color: #ff6b6b; }
+        .magic-btn-visual { color: #48dbfb; }
+        .magic-btn-audio { color: #1dd1a1; }
+        .magic-btn-rapid { color: #9b59b6; background-color: #f8e9ff;}
+
+        /* Fully Screen Secure HTML Viewer Overlay */
+        #secure-viewer-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100dvh;
+            background-color: #ffffff;
+            z-index: 9999;
+            padding: 0;
+            margin: 0;
+        }
+        #secure-iframe {
+            width: 100vw;
+            height: 100dvh;
+            border: none;
+            display: block;
+        }
+        
+        .floating-back-btn {
+            position: fixed;
+            top: 15px;
+            right: 15px; 
+            padding: 8px 14px; 
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            z-index: 10000;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
+
+        /* SCHOOL HEADER ANIMATIONS */
+        .school-title {
+            font-size: 1.8em;
+            font-weight: 900;
+            margin: 5px 0;
+            background: linear-gradient(270deg, #ff4757, #1e90ff, #2ed573, #ffa502);
+            background-size: 400% 400%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientCycle 6s ease infinite;
+        }
+        .school-address {
+            font-size: 1.1em;
+            color: #747d8c;
+            margin: 0 0 15px 0;
+            font-weight: 600;
+        }
+        .class-title {
+            font-size: 1.4em;
+            font-weight: bold;
+            margin: 10px 0;
+            background: linear-gradient(270deg, #9b59b6, #3498db, #e74c3c);
+            background-size: 400% 400%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientCycle 5s ease infinite reverse;
+        }
+
+        @keyframes gradientCycle {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* DESKTOP VIEW SCALING */
+        @media (min-width: 768px) {
+            body { font-size: 20px; }
+            .screen { max-width: 800px; }
+            .clay-card { padding: 50px; }
+            .clay-btn { padding: 25px 40px; font-size: 1.1em; border-radius: 20px; }
+            .grid-container { gap: 30px; }
+            .floating-back-btn { font-size: 16px; padding: 12px 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="screen-home" class="screen active-screen">
+        <div class="clay-card">
+            
+            <h1 class="school-title">Everest Academy School</h1>
+            <h3 class="school-address">Attariya 01 Kailali</h3>
+            <h2 class="class-title">Class 7 Science</h2>
+            
+            <p style="color: #888; font-size: 0.9em;">Visual & Animated Learning Simulator</p>
+
+            <div class="grid-container">
+                <button class="clay-btn full-width-btn" onclick="openSubject(0, 'Important Knowledge')">🌟 Important Knowledge</button>
+                
+                <button class="clay-btn" onclick="openSubject(1, 'Scientific Learning')">1. Scientific Learning</button>
+                <button class="clay-btn" onclick="openSubject(2, 'Information & Communication')">2. Information & Comm.</button>
+                <button class="clay-btn" onclick="openSubject(3, 'Organisms & their Structure')">3. Organisms Structure</button>
+                <button class="clay-btn" onclick="openSubject(4, 'Biodiversity & Environment')">4. Biodiversity & Env.</button>
+                <button class="clay-btn" onclick="openSubject(5, 'Life Process')">5. Life Process</button>
+                <button class="clay-btn" onclick="openSubject(6, 'Force and Motion')">6. Force and Motion</button>
+                <button class="clay-btn" onclick="openSubject(7, 'Energy in Daily Life')">7. Energy in Daily Life</button>
+                <button class="clay-btn" onclick="openSubject(8, 'Electricity and Magnetism')">8. Electricity & Magnetism</button>
+                <button class="clay-btn" onclick="openSubject(9, 'Matter')">9. Matter</button>
+                <button class="clay-btn" onclick="openSubject(10, 'Materials Used in Daily Life')">10. Materials Used</button>
+                <button class="clay-btn" onclick="openSubject(11, 'The Earth and Space')">11. Earth and Space</button>
+                <button class="clay-btn" onclick="openSubject(12, 'Miscellaneous')">12. Miscellaneous</button>
+            </div>
+            
+        </div>
+    </div>
+
+    <div id="screen-topics" class="screen">
+        <div class="clay-card">
+            <h2 id="subtopic-title">Subject Title</h2>
+            <p>Select a lesson to begin learning 👇</p>
+            <div class="list-container" id="subtopic-list"></div>
+            <button class="clay-btn back-btn" onclick="switchScreen('screen-home')">Back to Home</button>
+        </div>
+    </div>
+
+    <div id="screen-magic" class="screen">
+        <div class="clay-card">
+            <h2 id="magic-title">Topic Title</h2>
+            <p id="magic-loading" style="color: #888; font-weight: bold;">🔍 Finding materials on server...</p>
+            <div id="dynamic-buttons-container"></div>
+            <button class="clay-btn back-btn" onclick="switchScreen('screen-topics')">Back to Lessons</button>
+        </div>
+    </div>
+
+    <div id="secure-viewer-overlay">
+        <button class="floating-back-btn" onclick="closeSecureViewer()">➡️ Back</button>
+        <iframe id="secure-iframe"></iframe>
+    </div>
+
+    <script>
+        let currentSubjectId = null;
+
+        // SYLLABUS DATA
+        const syllabus = {
+            0: [
+                { id: "0.1", name: "Solar System" },
+                { id: "0.2", name: "Water Cycle" },
+                { id: "0.3", name: "Photosynthesis" },
+                { id: "0.4", name: "State Change" },
+                { id: "0.5", name: "Steam Engine" }
+            ],
+            // Function to generate standard 5 subtopics automatically
+            ...Object.fromEntries(Array.from({length: 12}, (_, i) => [i + 1, [
+                { id: `${i+1}.1`, name: "Lesson i" },
+                { id: `${i+1}.2`, name: "Lesson ii" },
+                { id: `${i+1}.3`, name: "Lesson iii" },
+                { id: `${i+1}.4`, name: "Lesson iv" },
+                { id: `${i+1}.5`, name: "Lesson v" }
+            ]]))
+        };
+
+        function switchScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
+            document.getElementById(screenId).classList.add('active-screen');
+            window.scrollTo(0, 0); 
+        }
+
+        function openSubject(subjectId, subjectName) {
+            currentSubjectId = subjectId;
+            document.getElementById('subtopic-title').innerText = subjectName;
+            const listContainer = document.getElementById('subtopic-list');
+            listContainer.innerHTML = ''; 
+            
+            const topics = syllabus[subjectId] || [];
+            topics.forEach(topic => {
+                const btn = document.createElement('button');
+                btn.className = 'clay-btn list-btn';
+                btn.innerText = `${topic.id} - ${topic.name}`;
+                btn.onclick = () => openMagicalScreen(topic.id, topic.name);
+                listContainer.appendChild(btn);
+            });
+            switchScreen('screen-topics');
+        }
+
+        async function openMagicalScreen(topicId, topicName) {
+            document.getElementById('magic-title').innerText = `${topicId} ${topicName}`;
+            
+            const btnContainer = document.getElementById('dynamic-buttons-container');
+            const loadingText = document.getElementById('magic-loading');
+            
+            btnContainer.innerHTML = '';
+            loadingText.style.display = 'block';
+            switchScreen('screen-magic'); 
+
+            // Probing suffixes to find multiple files (e.g. 1.1, 1.1A, 1.1B...)
+            const suffixes = ['', 'A', 'B', 'C', 'D'];
+            const fileChecks = [];
+
+            // Queue HTML and PNG checks
+            suffixes.forEach(suffix => {
+                fileChecks.push(checkFileExists(`${currentSubjectId}/${topicId}${suffix}.html`).then(exists => ({ type: 'html', suffix, exists })));
+                fileChecks.push(checkFileExists(`${currentSubjectId}/${topicId}${suffix}.png`).then(exists => ({ type: 'png', suffix, exists })));
+            });
+
+            // Queue Audio check (Only one allowed per instructions: e.g., 1.1.m4a)
+            fileChecks.push(checkFileExists(`${currentSubjectId}/${topicId}.m4a`).then(exists => ({ type: 'audio', suffix: '', exists })));
+
+            const results = await Promise.all(fileChecks);
+            loadingText.style.display = 'none';
+
+            let buttonsFound = 0;
+
+            // Render HTML Buttons
+            results.filter(r => r.type === 'html' && r.exists).forEach(r => {
+                const btnClass = r.suffix === '' ? 'magic-btn-rapid' : 'magic-btn-science';
+                const btnText = r.suffix === '' ? '⚡ Rapid Learning' : '🧪 Scientific Learning';
+                const filePath = `${currentSubjectId}/${topicId}${r.suffix}.html`;
+                
+                btnContainer.innerHTML += `<button class="clay-btn ${btnClass}" onclick="launchMaterial('${filePath}', true)">${btnText}</button>`;
+                buttonsFound++;
+            });
+
+            // Render PNG Buttons
+            results.filter(r => r.type === 'png' && r.exists).forEach(r => {
+                const filePath = `${currentSubjectId}/${topicId}${r.suffix}.png`;
+                btnContainer.innerHTML += `<button class="clay-btn magic-btn-visual" onclick="launchMaterial('${filePath}', false)">🖼️ Visual Learning</button>`;
+                buttonsFound++;
+            });
+
+            // Render Audio Button
+            const hasAudio = results.find(r => r.type === 'audio' && r.exists);
+            if (hasAudio) {
+                const filePath = `${currentSubjectId}/${topicId}.m4a`;
+                btnContainer.innerHTML += `<button class="clay-btn magic-btn-audio" onclick="launchMaterial('${filePath}', false)">🎧 Audio Learning</button>`;
+                buttonsFound++;
+            }
+
+            if (buttonsFound === 0) {
+                btnContainer.innerHTML = `<p style="color: #ff4757; font-weight: bold; padding: 20px;">Lesson materials are uploading soon...</p>`;
+            }
+        }
+
+        async function checkFileExists(url) {
+            try {
+                const response = await fetch(url, { method: 'HEAD' });
+                return response.ok; 
+            } catch (error) {
+                return false;
+            }
+        }
+
+        async function launchMaterial(filePath, isHtml) {
+            if (isHtml) {
+                const viewer = document.getElementById('secure-viewer-overlay');
+                const iframe = document.getElementById('secure-iframe');
+                viewer.style.display = 'block';
+                iframe.srcdoc = "<h2 style='text-align:center; font-family:sans-serif; color:#888; padding-top:40dvh;'>Loading Simulator...</h2>";
+                
+                try {
+                    const response = await fetch(filePath);
+                    if(!response.ok) throw new Error("File Missing");
+                    const htmlContent = await response.text();
+                    iframe.srcdoc = htmlContent;
+                } catch (e) {
+                    iframe.srcdoc = "<h2 style='text-align:center; color:red; padding-top:40dvh;'>Failed to load simulation material.</h2>";
+                }
+            } else {
+                // Open PNGs and Audios in a new tab natively
+                window.open(filePath, '_blank'); 
+            }
+        }
+
+        function closeSecureViewer() {
+            document.getElementById('secure-viewer-overlay').style.display = 'none';
+            document.getElementById('secure-iframe').srcdoc = '';
+        }
+    </script>
+</body>
+</html>
